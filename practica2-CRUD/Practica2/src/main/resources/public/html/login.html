@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LOGIN</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="/estilos/estilosLogin.css" rel="stylesheet" >
+
+</head>
+<body>
+<div class="card">
+    <div class="card-header">
+        Iniciar Sesión
+    </div>
+    <div class="card-body">
+        <form method="post" action="/procesarLogin">
+            <div class="mb-3">
+                <label class="form-label">Nombre de usuario:</label>
+                <input type="text" class="form-control" aria-describedby="emailHelp" name="username">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                <input type="password" class="form-control" name="password">
+            </div>
+            <div class="buttonContainer">
+                <button type="submit" class="btn btn-secondary">Iniciar Sesión</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

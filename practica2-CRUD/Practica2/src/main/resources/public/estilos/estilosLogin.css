@@ -1,0 +1,24 @@
+.card{
+    width: 50%;
+    margin: 0 auto;
+    margin-top: 60px;
+}
+.card-header{
+    text-align: center;
+    font-size: 30px;
+}
+.mb-3{
+    text-align: center;
+}
+.form-control{
+    margin-top: 4px;
+    width: 70%;
+    margin: 0 auto;
+}
+.buttonContainer{
+    text-align: center;
+}
+ button{
+    width: 70%;
+    margin-top: 8px;
+ }
