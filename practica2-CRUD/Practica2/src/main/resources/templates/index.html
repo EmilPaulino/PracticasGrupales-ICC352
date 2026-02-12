@@ -114,57 +114,40 @@
             </p>
         </div>
     </div>
-    <div class="row mb-2">
-        <div class="col-md-6">
-            <div
-                    class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative"
-            >
+    <div class="row mb-2" th:each="articulo : ${articulos}">
+        <div class="col-md-12">
+            <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm position-relative">
                 <div class="col p-4 d-flex flex-column position-static">
-                    <strong class="d-inline-block mb-2 text-primary-emphasis"
-                    >World</strong
-                    >
-                    <h3 class="mb-0">Featured post</h3>
-                    <div class="mb-1 text-body-secondary">Nov 12</div>
-                    <p class="card-text mb-auto">
-                        This is a wider card with supporting text below as a natural
-                        lead-in to additional content.
-                    </p>
-                    <a
-                            href="#"
-                            class="icon-link gap-1 icon-link-hover stretched-link"
-                    >
-                        Continue reading
-                        <svg class="bi" aria-hidden="true">
-                            <use xlink:href="#chevron-right"></use>
-                        </svg>
-                    </a>
-                </div>
 
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div
-                    class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative"
-            >
-                <div class="col p-4 d-flex flex-column position-static">
-                    <strong class="d-inline-block mb-2 text-success-emphasis"
-                    >Design</strong
-                    >
-                    <h3 class="mb-0">Post title</h3>
-                    <div class="mb-1 text-body-secondary">Nov 11</div>
-                    <p class="mb-auto">
-                        This is a wider card with supporting text below as a natural
-                        lead-in to additional content.
+                    <!-- Título -->
+                    <h3 class="mb-0" th:text="${articulo.titulo}"></h3>
+
+                    <!-- Autor -->
+                    <div class="mb-1 text-body-secondary">
+                        Autor: <span th:text="${articulo.autor.username}"></span>
+                    </div>
+
+                    <!-- Etiquetas -->
+                    <div class="mb-2">
+                    <span class="badge bg-primary me-1"
+                          th:each="etiqueta : ${articulo.etiquetas}"
+                          th:text="${etiqueta.nombre}">
+                    </span>
+                    </div>
+
+                    <!-- Resumen (primeros 70 caracteres) -->
+                    <p class="card-text mb-auto"
+                       th:text="${#strings.length(articulo.cuerpo) > 70} ?
+                            ${#strings.substring(articulo.cuerpo,0,70)} + '...' :
+                            ${articulo.cuerpo}">
                     </p>
-                    <a
-                            href="#"
-                            class="icon-link gap-1 icon-link-hover stretched-link"
-                    >
-                        Continue reading
-                        <svg class="bi" aria-hidden="true">
-                            <use xlink:href="#chevron-right"></use>
-                        </svg>
+
+                    <!-- Enlace a lectura completa -->
+                    <a th:href="@{'/articulos/editar/' + ${articulo.id}}"
+                       class="icon-link gap-1 icon-link-hover stretched-link">
+                        Leer más
                     </a>
+
                 </div>
             </div>
         </div>
