@@ -1,5 +1,6 @@
 package edu.pucmm.eict.web;
 
+import edu.pucmm.eict.web.contoladores.ArticuloController;
 import edu.pucmm.eict.web.contoladores.LoginController;
 import edu.pucmm.eict.web.contoladores.UsuarioController;
 import io.javalin.Javalin;
@@ -46,6 +47,23 @@ public class Main {
         app.get("/usuarios/editar/{id}", usuarioController::formularioEditar);
         app.post("/usuarios/editar/{id}", usuarioController::editar);
         app.get("/usuarios/eliminar/{id}", usuarioController::eliminar);
+
+        //Endpoints para Articulos
+        ArticuloController articuloController = new ArticuloController();
+        app.get("/articulos", articuloController::listar);
+        app.get("/articulos/crear", articuloController::formularioCrear);
+        app.post("/articulos/crear", articuloController::crear);
+        app.get("/articulos/editar/{id}", articuloController::formularioEditar);
+        app.post("/articulos/editar/{id}", articuloController::editar);
+        app.get("/articulos/eliminar/{id}", articuloController::eliminar);
+
+        // Endpoints para Comentarios
+        app.post("/articulos/{id}/comentarios/agregar", articuloController::agregarComentario);
+        app.get("/articulos/{id}/comentarios/eliminar/{comentarioId}", articuloController::eliminarComentario);
+
+        // Endpoints para Etiquetas
+        app.post("/articulos/{id}/etiquetas/agregar", articuloController::agregarEtiqueta);
+        app.get("/articulos/{id}/etiquetas/eliminar/{etiquetaId}", articuloController::eliminarEtiqueta);
 
         app.start(7000);
     }

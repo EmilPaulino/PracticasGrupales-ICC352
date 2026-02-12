@@ -4,13 +4,11 @@ public class Comentario {
     private long id;
     private String comentario;
     private Usuario autor;
-    private Articulo articulo;
 
-    public Comentario(long id, String comentario, Usuario autor, Articulo articulo) {
+    public Comentario(long id, String comentario, Usuario autor) {
         this.id = id;
         this.comentario = comentario;
         this.autor = autor;
-        this.articulo = articulo;
     }
 
     public long getId() {
@@ -35,13 +33,5 @@ public class Comentario {
 
     public void setAutor(Usuario autor) {
         this.autor = autor;
-    }
-
-    public Articulo getArticulo() {
-        return articulo;
-    }
-
-    public void setArticulo(Articulo articulo) {
-        this.articulo = articulo;
     }
 }

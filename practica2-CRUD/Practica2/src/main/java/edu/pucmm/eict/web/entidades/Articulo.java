@@ -63,6 +63,7 @@ public class Articulo {
     }
 
     public ArrayList<Comentario> getListaComentarios() {
+
         return listaComentarios;
     }
 
