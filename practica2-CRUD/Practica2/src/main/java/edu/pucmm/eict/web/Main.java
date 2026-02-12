@@ -3,6 +3,7 @@ package edu.pucmm.eict.web;
 import edu.pucmm.eict.web.contoladores.ArticuloController;
 import edu.pucmm.eict.web.contoladores.LoginController;
 import edu.pucmm.eict.web.contoladores.UsuarioController;
+import edu.pucmm.eict.web.servicios.ArticuloService;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.rendering.template.JavalinThymeleaf;
@@ -23,8 +24,14 @@ public class Main {
             config.fileRenderer(new JavalinThymeleaf());
         });
 
-        //Endpoint que va al index
         app.get("/", ctx -> {
+            ArticuloService articuloService = ArticuloService.getInstancia();
+            var articulos = articuloService.listarArticulos();
+
+            // Ordenar del más nuevo al más viejo (si el ID es incremental)
+            articulos.sort((a, b) -> Long.compare(b.getId(), a.getId()));
+
+            ctx.attribute("articulos", articulos);
             ctx.render("templates/index.html");
         });
 
