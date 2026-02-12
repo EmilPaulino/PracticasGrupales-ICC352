@@ -3,6 +3,7 @@ package edu.pucmm.eict.web;
 import edu.pucmm.eict.web.contoladores.ArticuloController;
 import edu.pucmm.eict.web.contoladores.LoginController;
 import edu.pucmm.eict.web.contoladores.UsuarioController;
+import edu.pucmm.eict.web.entidades.Articulo;
 import edu.pucmm.eict.web.servicios.ArticuloService;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
@@ -63,6 +64,12 @@ public class Main {
         app.get("/articulos/editar/{id}", articuloController::formularioEditar);
         app.post("/articulos/editar/{id}", articuloController::editar);
         app.get("/articulos/eliminar/{id}", articuloController::eliminar);
+        app.get("/articulos/ver/{id}", ctx -> {
+            long id = Long.parseLong(ctx.pathParam("id"));
+            Articulo articulo = ArticuloService.getInstancia().buscarPorId(id);
+            ctx.attribute("articulo", articulo);
+            ctx.render("templates/articulos/verArticulo.html");
+        });
 
         // Endpoints para Comentarios
         app.post("/articulos/{id}/comentarios/agregar", articuloController::agregarComentario);
