@@ -43,6 +43,16 @@
             </textarea>
         </div>
 
+        <!-- ETIQUETAS -->
+        <div class="mb-3">
+            <label class="form-label">Etiquetas (separadas por coma)</label>
+            <input type="text"
+                   class="form-control"
+                   name="etiquetas"
+                   placeholder="java, web, spring"
+                   th:value="${etiquetasTexto}">
+        </div>
+
         <!-- BOTONES -->
         <div class="mt-4">
             <a class="btn btn-secondary me-3" href="/articulos">Cancelar</a>

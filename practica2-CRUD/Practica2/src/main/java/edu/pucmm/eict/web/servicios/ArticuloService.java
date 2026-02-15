@@ -134,12 +134,36 @@ public class ArticuloService {
     }
 
     /*
-    * Crea una etiqueta nueva para un artículo.
+     * Arreglo global de etiquetas
+     * */
+    private ArrayList<Etiqueta> todasLasEtiquetas = new ArrayList<>();
+
+    /*
+    * Crea una etiqueta
     * */
     public boolean agregarEtiqueta(long articuloId, String contenido) {
+
         Articulo articulo = buscarPorId(articuloId);
-        Etiqueta etiqueta = new Etiqueta(contadorEtiquetaID++, contenido);
-        articulo.getListaEtiquetas().add(etiqueta);
+        if (articulo == null) {
+            return false;
+        }
+
+        contenido = contenido.trim();
+
+        // Buscar si ya existe
+        Etiqueta etiqueta = buscarEtiquetaPorNombre(contenido);
+
+        // Si no existe, la crea y la guarda globalmente
+        if (etiqueta == null) {
+            etiqueta = new Etiqueta(contadorEtiquetaID++, contenido);
+            todasLasEtiquetas.add(etiqueta);
+        }
+
+        // Evita duplicar etiqueta en el mismo artículo
+        if (!articulo.getListaEtiquetas().contains(etiqueta)) {
+            articulo.getListaEtiquetas().add(etiqueta);
+        }
+
         return true;
     }
 
@@ -162,6 +186,18 @@ public class ArticuloService {
     public Etiqueta buscarEtiquetaPorId(Articulo articulo, long etiquetaId) {
         for (Etiqueta e : articulo.getListaEtiquetas()) {
             if (e.getId() == etiquetaId) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    /*
+     * Busca la etiqueta de por nombre
+     * */
+    public Etiqueta buscarEtiquetaPorNombre(String contenido){
+        for(Etiqueta e : todasLasEtiquetas){
+            if(e.getEtiqueta().equalsIgnoreCase(contenido)){
                 return e;
             }
         }
