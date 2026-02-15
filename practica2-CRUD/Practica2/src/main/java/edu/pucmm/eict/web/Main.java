@@ -28,11 +28,14 @@ public class Main {
         app.get("/", ctx -> {
             ArticuloService articuloService = ArticuloService.getInstancia();
             var articulos = articuloService.listarArticulos();
+            var etiquetas = articuloService.listarEtiquetas();
 
             // Ordenar del más nuevo al más viejo (si el ID es incremental)
             articulos.sort((a, b) -> Long.compare(b.getId(), a.getId()));
 
             ctx.attribute("articulos", articulos);
+            ctx.attribute("etiquetas", etiquetas);
+
             ctx.render("templates/index.html");
         });
 
@@ -67,6 +70,13 @@ public class Main {
         app.get("/articulos/ver/{id}", ctx -> {
             long id = Long.parseLong(ctx.pathParam("id"));
             Articulo articulo = ArticuloService.getInstancia().buscarPorId(id);
+
+            if (articulo == null) {
+                ctx.status(404);
+                ctx.result("Artículo no encontrado");
+                return;
+            }
+
             ctx.attribute("articulo", articulo);
             ctx.render("templates/articulos/verArticulo.html");
         });

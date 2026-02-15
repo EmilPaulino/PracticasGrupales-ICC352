@@ -74,48 +74,10 @@
 <div class="container">
     <!--Se agrega el navbar desde una plantilla -->
     <div th:replace="/templates/fragmentos/navbar.html :: navbar"></div>
-
-    <div class="nav-scroller py-1 mb-3 border-bottom">
-        <nav class="nav nav-underline justify-content-between">
-            <a class="nav-item nav-link link-body-emphasis active" href="#"
-            >World</a
-            >
-            <a class="nav-item nav-link link-body-emphasis" href="#">U.S.</a>
-            <a class="nav-item nav-link link-body-emphasis" href="#"
-            >Technology</a
-            >
-            <a class="nav-item nav-link link-body-emphasis" href="#">Design</a>
-            <a class="nav-item nav-link link-body-emphasis" href="#">Culture</a>
-            <a class="nav-item nav-link link-body-emphasis" href="#">Business</a>
-            <a class="nav-item nav-link link-body-emphasis" href="#">Politics</a>
-            <a class="nav-item nav-link link-body-emphasis" href="#">Opinion</a>
-            <a class="nav-item nav-link link-body-emphasis" href="#">Science</a>
-            <a class="nav-item nav-link link-body-emphasis" href="#">Health</a>
-            <a class="nav-item nav-link link-body-emphasis" href="#">Style</a>
-            <a class="nav-item nav-link link-body-emphasis" href="#">Travel</a>
-        </nav>
-    </div>
 </div>
 <main class="container">
-    <div class="p-4 p-md-5 mb-4 rounded text-body-emphasis bg-body-secondary">
-        <div class="col-lg-6 px-0">
-            <h1 class="display-4 fst-italic">
-                Title of a longer featured blog post
-            </h1>
-            <p class="lead my-3">
-                Multiple lines of text that form the lede, informing new readers
-                quickly and efficiently about what’s most interesting in this post’s
-                contents.
-            </p>
-            <p class="lead mb-0">
-                <a href="#" class="text-body-emphasis fw-bold"
-                >Continue reading...</a
-                >
-            </p>
-        </div>
-    </div>
     <div class="row mb-2" th:each="articulo : ${articulos}">
-        <div class="col-md-12">
+        <div class="col-md-8">
             <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm position-relative">
                 <div class="col p-4 d-flex flex-column position-static">
 
@@ -143,12 +105,26 @@
                     </p>
 
                     <!-- Enlace a lectura completa -->
-                    <a th:href="@{'/articulos/ver/' + ${articulo.id}}">
-                       class="icon-link gap-1 icon-link-hover stretched-link">
+                    <a class="icon-link gap-1 icon-link-hover stretched-link" th:href="@{'/articulos/ver/' + ${articulo.id}}">
                         Leer más
                     </a>
 
                 </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="border p-3">
+
+                <h5 class="fw-bold">Etiquetas</h5>
+
+                <span th:if="${etiquetas.isEmpty()}">
+            <span class="text-muted">No hay etiquetas</span>
+        </span>
+
+                <span th:each="e, iter: ${etiquetas}">
+            <span th:text="${e.etiqueta}"></span><span th:if="${!iter.last}">,</span>
+        </span>
+
             </div>
         </div>
     </div>

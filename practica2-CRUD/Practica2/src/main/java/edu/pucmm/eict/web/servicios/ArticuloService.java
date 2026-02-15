@@ -29,6 +29,10 @@ public class ArticuloService {
     public ArrayList<Articulo> listarArticulos() {
         return losArticulos;
     }
+    public ArrayList<Etiqueta> listarEtiquetas() {
+        return todasLasEtiquetas;
+    }
+
 
     /*
     * Crea un artículo nuevo.

@@ -20,6 +20,22 @@ public class ArticuloController {
     }
 
     /*
+     * Muestra un articulo seleccionado
+     */
+    public void ver(Context ctx){
+        long id = Long.parseLong(ctx.pathParam("id"));
+        Articulo articulo = articuloService.buscarPorId(id);
+
+        if(articulo == null){
+            ctx.status(404);
+            return;
+        }
+
+        ctx.attribute("articulo", articulo);
+        ctx.render("templates/articulos/verArticulo.html");
+    }
+
+    /*
      * Muestra el formulario para crear artículo
      */
     public void formularioCrear(Context ctx){
@@ -152,7 +168,7 @@ public class ArticuloController {
             ctx.status(400);
             return;
         }
-        ctx.redirect("/articulos/editar/" + articuloId);
+        ctx.redirect("/articulos/ver/" + articuloId);
     }
 
     /*
