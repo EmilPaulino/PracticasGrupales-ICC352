@@ -130,8 +130,8 @@
                     <!-- Etiquetas -->
                     <div class="mb-2">
                     <span class="badge bg-primary me-1"
-                          th:each="etiqueta : ${articulo.etiquetas}"
-                          th:text="${etiqueta.nombre}">
+                          th:each="etiqueta : ${articulo.listaEtiquetas}"
+                          th:text="${etiqueta.etiqueta}">
                     </span>
                     </div>
 
