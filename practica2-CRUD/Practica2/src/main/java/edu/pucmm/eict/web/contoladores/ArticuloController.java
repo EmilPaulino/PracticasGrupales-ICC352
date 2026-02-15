@@ -20,9 +20,26 @@ public class ArticuloController {
     }
 
     /*
+     * Muestra un articulo seleccionado
+     */
+    public void ver(Context ctx){
+        long id = Long.parseLong(ctx.pathParam("id"));
+        Articulo articulo = articuloService.buscarPorId(id);
+
+        if(articulo == null){
+            ctx.status(404);
+            return;
+        }
+
+        ctx.attribute("articulo", articulo);
+        ctx.render("templates/articulos/verArticulo.html");
+    }
+
+    /*
      * Muestra el formulario para crear artículo
      */
     public void formularioCrear(Context ctx){
+        ctx.attribute("etiquetasTexto", "");
         ctx.render("templates/articulos/formularioArticulo.html");
     }
 
@@ -32,15 +49,35 @@ public class ArticuloController {
     public void crear(Context ctx){
         String titulo = ctx.formParam("titulo");
         String cuerpo = ctx.formParam("cuerpo");
+        String etiquetasTexto = ctx.formParam("etiquetas");
+
         Usuario autor = (Usuario) ctx.sessionAttribute("user");
+
         boolean creado = articuloService.crearArticulo(titulo, cuerpo, autor);
+
         if(!creado){
             ctx.attribute("error", "El artículo ya existe");
+            ctx.attribute("etiquetasTexto", etiquetasTexto);
             ctx.render("templates/articulos/formularioArticulo.html");
             return;
         }
+
+        // Obtener el artículo recién creado
+        ArrayList<Articulo> lista = articuloService.listarArticulos();
+        Articulo articulo = lista.get(lista.size() - 1);
+
+        // Procesar etiquetas
+        if(etiquetasTexto != null && !etiquetasTexto.isBlank()){
+            String[] etiquetas = etiquetasTexto.split(",");
+
+            for(String e : etiquetas){
+                articuloService.agregarEtiqueta(articulo.getId(), e.trim());
+            }
+        }
+
         ctx.redirect("/articulos");
     }
+
 
     /*
      * Muestra el formulario para editar un artículo
@@ -48,11 +85,26 @@ public class ArticuloController {
     public void formularioEditar(Context ctx){
         long id = Long.parseLong(ctx.pathParam("id"));
         Articulo articulo = articuloService.buscarPorId(id);
+
         if(articulo == null){
             ctx.status(404);
             return;
         }
+
         ctx.attribute("articulo", articulo);
+
+        //Convierte lista de etiquetas a texto
+        StringBuilder etiquetas = new StringBuilder();
+
+        for(var e : articulo.getListaEtiquetas()){
+            if(etiquetas.length() > 0){
+                etiquetas.append(", ");
+            }
+            etiquetas.append(e.getEtiqueta());
+        }
+
+        ctx.attribute("etiquetasTexto", etiquetas.toString());
+
         ctx.render("templates/articulos/formularioArticulo.html");
     }
 
@@ -63,12 +115,31 @@ public class ArticuloController {
         long id = Long.parseLong(ctx.pathParam("id"));
         String titulo = ctx.formParam("titulo");
         String cuerpo = ctx.formParam("cuerpo");
+        String etiquetasTexto = ctx.formParam("etiquetas");
+
         boolean actualizado = articuloService.actualizarArticulo(id, titulo, cuerpo);
+
         if(!actualizado){
             ctx.attribute("error", "El artículo ya existe o no fue encontrado");
+            ctx.attribute("etiquetasTexto", etiquetasTexto);
             ctx.render("templates/articulos/formularioArticulo.html");
             return;
         }
+
+        Articulo articulo = articuloService.buscarPorId(id);
+
+        // Limpia etiquetas actuales
+        articulo.getListaEtiquetas().clear();
+
+        // Vuelve a agregarlas
+        if(etiquetasTexto != null && !etiquetasTexto.isBlank()){
+            String[] etiquetas = etiquetasTexto.split(",");
+
+            for(String e : etiquetas){
+                articuloService.agregarEtiqueta(id, e.trim());
+            }
+        }
+
         ctx.redirect("/articulos");
     }
 
@@ -97,7 +168,7 @@ public class ArticuloController {
             ctx.status(400);
             return;
         }
-        ctx.redirect("/articulos/editar/" + articuloId);
+        ctx.redirect("/articulos/ver/" + articuloId);
     }
 
     /*
@@ -111,7 +182,7 @@ public class ArticuloController {
             ctx.status(404);
             return;
         }
-        ctx.redirect("/articulos/editar/" + articuloId);
+        ctx.redirect("/articulos/ver/" + articuloId);
     }
 
     /*

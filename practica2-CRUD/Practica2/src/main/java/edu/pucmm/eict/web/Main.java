@@ -3,6 +3,8 @@ package edu.pucmm.eict.web;
 import edu.pucmm.eict.web.contoladores.ArticuloController;
 import edu.pucmm.eict.web.contoladores.LoginController;
 import edu.pucmm.eict.web.contoladores.UsuarioController;
+import edu.pucmm.eict.web.entidades.Articulo;
+import edu.pucmm.eict.web.servicios.ArticuloService;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.rendering.template.JavalinThymeleaf;
@@ -23,8 +25,17 @@ public class Main {
             config.fileRenderer(new JavalinThymeleaf());
         });
 
-        //Endpoint que va al index
         app.get("/", ctx -> {
+            ArticuloService articuloService = ArticuloService.getInstancia();
+            var articulos = articuloService.listarArticulos();
+            var etiquetas = articuloService.listarEtiquetas();
+
+            // Ordenar del más nuevo al más viejo (si el ID es incremental)
+            articulos.sort((a, b) -> Long.compare(b.getId(), a.getId()));
+
+            ctx.attribute("articulos", articulos);
+            ctx.attribute("etiquetas", etiquetas);
+
             ctx.render("templates/index.html");
         });
 
@@ -56,6 +67,19 @@ public class Main {
         app.get("/articulos/editar/{id}", articuloController::formularioEditar);
         app.post("/articulos/editar/{id}", articuloController::editar);
         app.get("/articulos/eliminar/{id}", articuloController::eliminar);
+        app.get("/articulos/ver/{id}", ctx -> {
+            long id = Long.parseLong(ctx.pathParam("id"));
+            Articulo articulo = ArticuloService.getInstancia().buscarPorId(id);
+
+            if (articulo == null) {
+                ctx.status(404);
+                ctx.result("Artículo no encontrado");
+                return;
+            }
+
+            ctx.attribute("articulo", articulo);
+            ctx.render("templates/articulos/verArticulo.html");
+        });
 
         // Endpoints para Comentarios
         app.post("/articulos/{id}/comentarios/agregar", articuloController::agregarComentario);

@@ -47,6 +47,13 @@
                 </a>
               </li>
 
+              <li th:if="${session.user.administrator}">
+                <a class="dropdown-item"
+                   th:href="@{/articulos}">
+                  Gestionar Artículos
+                </a>
+              </li>
+
               <li>
                 <a class="dropdown-item"
                    th:href="@{/logout}">
