@@ -182,7 +182,7 @@ public class ArticuloController {
             ctx.status(404);
             return;
         }
-        ctx.redirect("/articulos/editar/" + articuloId);
+        ctx.redirect("/articulos/ver/" + articuloId);
     }
 
     /*

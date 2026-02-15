@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${articulo.titulo}">Ver Artículo</title>
-
+    <link rel="stylesheet" href="/estilos/estilosNavbar.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
           rel="stylesheet">
 </head>
@@ -62,7 +62,7 @@
 
                 <div>
                     <strong th:text="${c.autor.username}"></strong>
-                    <p class="mb-0" th:text="${c.texto}"></p>
+                    <p class="mb-0" th:text="${c.comentario}"></p>
                 </div>
 
                 <!-- BOTON ELIMINAR -->
@@ -79,7 +79,7 @@
     <hr>
 
     <!-- FORMULARIO AGREGAR COMENTARIO -->
-    <div class="mb-5">
+    <div class="mb-4">
         <h5>Agregar Comentario</h5>
 
         <form th:action="@{'/articulos/' + ${articulo.id} + '/comentarios/agregar'}"
@@ -93,17 +93,15 @@
                   required>
         </textarea>
             </div>
-
-            <button type="submit" class="btn btn-primary">
-                Comentar
-            </button>
+            <!-- BOTONES -->
+            <div class="mt-4">
+                <a class="btn btn-secondary me-3" href="/">Volver</a>
+                <button type="submit" class="btn btn-primary">
+                    Comentar
+                </button>
+            </div>
         </form>
     </div>
-
-    <a href="/" class="btn btn-secondary">
-        Volver
-    </a>
-
 </div>
 
 </body>
