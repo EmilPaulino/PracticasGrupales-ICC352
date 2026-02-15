@@ -24,4 +24,19 @@ public class Etiqueta {
     public void setEtiqueta(String etiqueta) {
         this.etiqueta = etiqueta;
     }
+
+    //Sobrescribe equals() y hashCode() en Etiqueta usando el id para que contains() funcione correctamente
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Etiqueta)) return false;
+        Etiqueta e = (Etiqueta) o;
+        return id == e.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Long.hashCode(id);
+    }
 }
+
