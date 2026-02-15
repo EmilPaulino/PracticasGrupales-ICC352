@@ -1,6 +1,7 @@
 package edu.pucmm.eict.web.contoladores;
 
 import edu.pucmm.eict.web.entidades.Articulo;
+import edu.pucmm.eict.web.entidades.Etiqueta;
 import edu.pucmm.eict.web.entidades.Usuario;
 import edu.pucmm.eict.web.servicios.ArticuloService;
 import io.javalin.http.Context;
@@ -112,6 +113,22 @@ public class ArticuloController {
             return;
         }
         ctx.redirect("/articulos/editar/" + articuloId);
+    }
+
+    /*
+     * Arreglo global para las etiquetas.
+     * */
+    private ArrayList<Etiqueta> todasLasEtiquetas = new ArrayList<>();
+    /*
+     * Busca etiqueta por nombre.
+     * */
+    public Etiqueta buscarEtiquetaPorNombre(String contenido){
+        for(Etiqueta e : todasLasEtiquetas){
+            if(e.getEtiqueta().equalsIgnoreCase(contenido)){
+                return e;
+            }
+        }
+        return null;
     }
 
     /*
