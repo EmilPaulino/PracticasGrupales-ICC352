@@ -117,7 +117,7 @@ public class ArticuloController {
         String cuerpo = ctx.formParam("cuerpo");
         String etiquetasTexto = ctx.formParam("etiquetas");
 
-        boolean actualizado = articuloService.actualizarArticulo(id, titulo, cuerpo);
+        boolean actualizado = articuloService.actualizarArticulo(id, titulo, cuerpo, ctx.sessionAttribute("user"));
 
         if(!actualizado){
             ctx.attribute("error", "El artículo ya existe o no fue encontrado");
@@ -148,7 +148,7 @@ public class ArticuloController {
      */
     public void eliminar(Context ctx){
         long id = Long.parseLong(ctx.pathParam("id"));
-        boolean eliminado = articuloService.eliminarArticulo(id);
+        boolean eliminado = articuloService.eliminarArticulo(id, ctx.sessionAttribute("user"));
         if(!eliminado){
             ctx.status(404);
             return;
@@ -177,7 +177,7 @@ public class ArticuloController {
     public void eliminarComentario(Context ctx){
         long articuloId = Long.parseLong(ctx.pathParam("id"));
         long comentarioId = Long.parseLong(ctx.pathParam("comentarioId"));
-        boolean eliminado = articuloService.eliminarComentario(articuloId, comentarioId);
+        boolean eliminado = articuloService.eliminarComentario(articuloId, comentarioId, ctx.sessionAttribute("user"));
         if(!eliminado){
             ctx.status(404);
             return;

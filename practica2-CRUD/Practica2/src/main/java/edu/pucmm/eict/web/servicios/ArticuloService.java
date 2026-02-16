@@ -11,6 +11,7 @@ import java.util.Date;
 public class ArticuloService {
     private static ArticuloService instancia;
     private ArrayList<Articulo> losArticulos = new ArrayList<>();
+    private ArrayList<Etiqueta> todasLasEtiquetas = new ArrayList<>();
     private long contadorArticuloID = 1;
     private long contadorComentarioID = 1;
     private long contadorEtiquetaID = 1;
@@ -38,7 +39,14 @@ public class ArticuloService {
     * Crea un artículo nuevo.
     * */
     public boolean crearArticulo(String titulo, String cuerpo, Usuario autor){
-
+        if (autor == null) {
+            return false;
+        }
+        titulo = titulo.trim();
+        cuerpo = cuerpo.trim();
+        if (titulo.isEmpty() || cuerpo.isEmpty()) {
+            return false;
+        }
         if(!validarTitulo(contadorArticuloID, titulo)){
             return false;
         }
@@ -51,6 +59,7 @@ public class ArticuloService {
     * Valida que el título de un artículo no se repita, para evitar duplicados.
     * */
     public boolean validarTitulo(long id, String titulo){
+        titulo = titulo.trim();
         for(Articulo a : losArticulos){
             if(a.getTitulo().equalsIgnoreCase(titulo) && a.getId() != id){
                 return false;
@@ -62,9 +71,20 @@ public class ArticuloService {
     /*
     * Actualiza la información de un artículo.
     * */
-    public boolean actualizarArticulo(long id, String titulo, String cuerpo){
+    public boolean actualizarArticulo(long id, String titulo, String cuerpo, Usuario usuario){
+        if (usuario == null){
+            return false;
+        }
         Articulo articulo = buscarPorId(id);
         if(articulo == null){
+            return false;
+        }
+        if (!usuario.getAdministrator() && !articulo.getAutor().equals(usuario)) {
+            return false;
+        }
+        titulo = titulo.trim();
+        cuerpo = cuerpo.trim();
+        if (titulo.isEmpty() || cuerpo.isEmpty()) {
             return false;
         }
         if(!validarTitulo(id, titulo)){
@@ -90,13 +110,19 @@ public class ArticuloService {
     /*
      * Elimina un artículo por su id.
      */
-    public boolean eliminarArticulo(long id){
-        Articulo articulo = buscarPorId(id);
-        if(articulo == null){
+    public boolean eliminarArticulo(long id, Usuario usuario){
+        if (usuario == null){
             return false;
         }
-        losArticulos.remove(articulo);
-        return true;
+        Articulo articulo = buscarPorId(id);
+        if (articulo == null){
+            return false;
+        }
+        if (usuario.getAdministrator() || articulo.getAutor().equals(usuario)) {
+            losArticulos.remove(articulo);
+            return true;
+        }
+        return false;
     }
 
     /*
@@ -107,6 +133,13 @@ public class ArticuloService {
         if (articulo == null){
             return false;
         }
+        contenido = contenido.trim();
+        if (contenido.isEmpty()){
+            return false;
+        }
+        if (autor == null){
+            return false;
+        }
         Comentario comentario = new Comentario(contadorComentarioID++, contenido, autor);
         articulo.getListaComentarios().add(comentario);
         return true;
@@ -115,15 +148,25 @@ public class ArticuloService {
     /*
     * Elimina un comentario de un artículo.
     * */
-    public boolean eliminarComentario(long articuloId, long comentarioId) {
+    public boolean eliminarComentario(long articuloId, long comentarioId, Usuario usuario) {
+        if (usuario == null) {
+            return false;
+        }
         Articulo articulo = buscarPorId(articuloId);
+        if (articulo == null) {
+            return false;
+        }
         Comentario comentario = buscarComentarioPorId(articulo, comentarioId);
         if (comentario == null) {
             return false;
         }
-        articulo.getListaComentarios().remove(comentario);
-        return true;
+        if (usuario.getAdministrator() || usuario.getAutor() || comentario.getAutor().equals(usuario)) {
+            articulo.getListaComentarios().remove(comentario);
+            return true;
+        }
+        return false;
     }
+
 
     /*
     * Busca un comentario por id.
@@ -131,43 +174,32 @@ public class ArticuloService {
     public Comentario buscarComentarioPorId(Articulo articulo, long comentarioId) {
         for (Comentario c : articulo.getListaComentarios()) {
             if (c.getId() == comentarioId) {
-                return c; // Se encontró el comentario
+                return c;
             }
         }
-        return null; // No se encontró
+        return null;
     }
-
-    /*
-     * Arreglo global de etiquetas
-     * */
-    private ArrayList<Etiqueta> todasLasEtiquetas = new ArrayList<>();
 
     /*
     * Crea una etiqueta
     * */
     public boolean agregarEtiqueta(long articuloId, String contenido) {
-
         Articulo articulo = buscarPorId(articuloId);
         if (articulo == null) {
             return false;
         }
-
         contenido = contenido.trim();
-
-        // Buscar si ya existe
+        if (contenido.isEmpty()) {
+            return false;
+        }
         Etiqueta etiqueta = buscarEtiquetaPorNombre(contenido);
-
-        // Si no existe, la crea y la guarda globalmente
         if (etiqueta == null) {
             etiqueta = new Etiqueta(contadorEtiquetaID++, contenido);
             todasLasEtiquetas.add(etiqueta);
         }
-
-        // Evita duplicar etiqueta en el mismo artículo
         if (!articulo.getListaEtiquetas().contains(etiqueta)) {
             articulo.getListaEtiquetas().add(etiqueta);
         }
-
         return true;
     }
 
@@ -176,6 +208,9 @@ public class ArticuloService {
     * */
     public boolean eliminarEtiqueta(long articuloId, long etiquetaId) {
         Articulo articulo = buscarPorId(articuloId);
+        if (articulo == null) {
+            return false;
+        }
         Etiqueta etiqueta = buscarEtiquetaPorId(articulo, etiquetaId);
         if (etiqueta == null) {
             return false;

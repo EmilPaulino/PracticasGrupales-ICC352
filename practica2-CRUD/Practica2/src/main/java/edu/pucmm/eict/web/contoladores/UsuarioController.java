@@ -43,7 +43,7 @@ public class UsuarioController {
 
         if(!creado){
             ctx.attribute("error", "El nombre de usuario ya existe");
-            ctx.render("usuarios/crear.html");
+            ctx.render("templates/usuarios/formularioUsuario.html");
             return;
         }
 
@@ -84,7 +84,7 @@ public class UsuarioController {
         if(!actualizado){
             ctx.attribute("error", "El nombre de usuario ya existe");
             ctx.attribute("usuario", usuarioService.buscarUsuarioPorID(id));
-            ctx.render("usuarios/editar.html");
+            ctx.render("templates/usuarios/formularioUsuario.html");
             return;
         }
 
