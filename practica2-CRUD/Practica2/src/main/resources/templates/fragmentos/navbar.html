@@ -47,7 +47,7 @@
                 </a>
               </li>
 
-              <li th:if="${session.user.administrator}">
+              <li th:if="${session.user.administrator or session.user.autor}">
                 <a class="dropdown-item"
                    th:href="@{/articulos}">
                   Gestionar Artículos

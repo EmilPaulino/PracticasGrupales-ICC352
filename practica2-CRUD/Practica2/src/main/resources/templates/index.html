@@ -73,61 +73,89 @@
 </svg>
 <div class="container">
     <!--Se agrega el navbar desde una plantilla -->
-    <div th:replace="/templates/fragmentos/navbar.html :: navbar"></div>
+    <div th:replace="~{/templates/fragmentos/navbar.html :: navbar}"></div>
 </div>
-<main class="container">
-    <div class="row mb-2" th:each="articulo : ${articulos}">
+<main class="container mb-3">
+    <div class="mt-3 p-4 p-md-5 mb-4 rounded text-body-emphasis bg-body-secondary">
+        <div class="col-lg-6 px-0">
+            <h1 class="display-4 fst-italic">
+                Nuestro Blog Oficial
+            </h1>
+            <p class="lead my-3">
+                En este espacio compartimos información, novedades y contenidos de interés general. Nuestro objetivo es
+                ofrecer artículos claros, útiles y fáciles de entender para todos nuestros lectores.
+            </p>
+        </div>
+    </div>
+    <div class="row">
+
+        <!-- COLUMNA IZQUIERDA (8) -->
         <div class="col-md-8">
-            <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm position-relative">
-                <div class="col p-4 d-flex flex-column position-static">
+            <!-- MENSAJE SI NO HAY ARTÍCULOS -->
+            <div th:if="${articulos.isEmpty()}" class="alert alert-info">
+                No hay artículos publicados todavía.
+            </div>
+            <div class="row mb-2" th:each="articulo : ${articulos}">
+                <div class="col-12">
+                    <div class="row g-0 border overflow-hidden flex-md-row mb-4 shadow-sm position-relative">
+                        <div class="col p-4 d-flex flex-column position-static">
 
-                    <!-- Título -->
-                    <h3 class="mb-0" th:text="${articulo.titulo}"></h3>
+                            <div class="d-flex flex-wrap gap-1 mb-2">
+                                <span th:each="e, iter : ${articulo.listaEtiquetas}">
+                                    <strong class="text-primary-emphasis"
+                                            th:text="${e.etiqueta}"></strong>
+                                    <span th:if="${!iter.last}">, </span>
+                                </span>
+                            </div>
 
-                    <!-- Autor -->
-                    <div class="mb-1 text-body-secondary">
-                        Autor: <span th:text="${articulo.autor.username}"></span>
+                            <h3 class="mb-0" th:text="${articulo.titulo}"></h3>
+
+                            <div class="mb-1 text-body-secondary">
+                                Por <strong th:text="${articulo.autor.username}"></strong>
+                                | <span th:text="${articulo.fecha}"></span>
+                            </div>
+
+                            <p class="card-text mb-auto"
+                               th:text="${#strings.length(articulo.cuerpo) > 70} ?
+                           ${#strings.substring(articulo.cuerpo,0,70)} + '...' :
+                           ${articulo.cuerpo}">
+                            </p>
+
+                            <a th:href="@{'/articulos/ver/' + ${articulo.id}}"
+                               class="icon-link gap-1 icon-link-hover stretched-link">
+                                Leer más
+                                <svg class="bi" aria-hidden="true">
+                                    <use xlink:href="#chevron-right"></use>
+                                </svg>
+                            </a>
+
+                        </div>
                     </div>
-
-                    <!-- Etiquetas -->
-                    <div class="mb-2">
-                    <span class="badge bg-primary me-1"
-                          th:each="etiqueta : ${articulo.listaEtiquetas}"
-                          th:text="${etiqueta.etiqueta}">
-                    </span>
-                    </div>
-
-                    <!-- Resumen (primeros 70 caracteres) -->
-                    <p class="card-text mb-auto"
-                       th:text="${#strings.length(articulo.cuerpo) > 70} ?
-                            ${#strings.substring(articulo.cuerpo,0,70)} + '...' :
-                            ${articulo.cuerpo}">
-                    </p>
-
-                    <!-- Enlace a lectura completa -->
-                    <a class="icon-link gap-1 icon-link-hover stretched-link" th:href="@{'/articulos/ver/' + ${articulo.id}}">
-                        Leer más
-                    </a>
-
                 </div>
             </div>
         </div>
+
+        <!-- COLUMNA DERECHA (4) -->
         <div class="col-md-4">
             <div class="border p-3">
 
                 <h5 class="fw-bold">Etiquetas</h5>
 
                 <span th:if="${etiquetas.isEmpty()}">
-            <span class="text-muted">No hay etiquetas</span>
-        </span>
+                <span class="text-muted">No hay etiquetas</span>
+            </span>
 
                 <span th:each="e, iter: ${etiquetas}">
-            <span th:text="${e.etiqueta}"></span><span th:if="${!iter.last}">,</span>
-        </span>
+                <span th:text="${e.etiqueta}"></span>
+                <span th:if="${!iter.last}">, </span>
+            </span>
 
             </div>
         </div>
+
     </div>
+
+
 
 </main>
 <footer class="py-5 text-center text-body-secondary bg-body-tertiary">

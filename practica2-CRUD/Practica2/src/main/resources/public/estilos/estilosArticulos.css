@@ -12,3 +12,21 @@
     width: 70%;
     margin: 0 auto;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Amiri, Georgia, "Times New Roman", serif;
+}
+
+/*
+ * Blog posts
+ */
+.blog-post {
+  margin-bottom: 4rem;
+}
+.blog-post-meta {
+  margin-bottom: 1.25rem;
+  color: #727272;
+}
+.articulo-cuerpo {
+    white-space: pre-line;
+}
