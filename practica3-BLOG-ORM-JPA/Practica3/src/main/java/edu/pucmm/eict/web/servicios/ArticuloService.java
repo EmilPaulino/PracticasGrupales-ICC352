@@ -62,6 +62,33 @@ public class ArticuloService extends GestionDb<Articulo> {
         return listaArticulos;
     }
 
+    /*
+    * Funcion para listar los articulos de forma paginada
+    * */
+    public List<Articulo> listarPaginado(int page) {
+        EntityManager em = getEntityManager();
+        try {
+            return em.createQuery("SELECT DISTINCT a FROM Articulo a LEFT JOIN FETCH a.listaEtiquetas ORDER BY a.fecha DESC", Articulo.class)
+                    .setFirstResult(page * 5)
+                    .setMaxResults(5)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    /*
+    * Cuenta el total de artículos desde la bd
+    * */
+    public long contarArticulos() {
+        EntityManager em = getEntityManager();
+        try {
+            return em.createQuery("SELECT COUNT(a) FROM Articulo a", Long.class).getSingleResult();
+        } finally {
+            em.close();
+        }
+    }
+
     public void agregarEtiqueta(Long articuloId, Long etiquetaId) {
         EntityManager em = getEntityManager();
         try {

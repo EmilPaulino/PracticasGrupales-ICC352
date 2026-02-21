@@ -81,6 +81,40 @@
                     </div>
                 </div>
             </div>
+            <!-- PAGINACION -->
+            <nav aria-label="Page navigation" th:if="${totalPaginas > 1}">
+                <ul class="pagination justify-content-center">
+
+                    <!-- Anterior -->
+                    <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{'/?page=' + ${page - 1}}">
+                            Anterior
+                        </a>
+                    </li>
+
+                    <!-- Números -->
+                    <li class="page-item"
+                        th:each="i : ${#numbers.sequence(0, totalPaginas - 1)}"
+                        th:classappend="${i == page} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{'/?page=' + ${i}}"
+                           th:text="${i + 1}"
+                           th:aria-current="${i == page} ? 'page' : null">
+                        </a>
+                    </li>
+
+                    <!-- Siguiente -->
+                    <li class="page-item"
+                        th:classappend="${page == totalPaginas - 1} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{'/?page=' + ${page + 1}}">
+                            Siguiente
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
         </div>
 
         <!-- COLUMNA DERECHA (4) -->

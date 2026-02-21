@@ -32,16 +32,19 @@ public class Main {
         BootStrapServices.getInstancia().init();
 
         app.get("/", ctx -> {
-            ArticuloService articuloService = ArticuloService.getInstancia();
-            var articulos = articuloService.findAll();
-            EtiquetaService etiquetaService = EtiquetaService.getInstancia();
-            var etiquetas = etiquetaService.findAll();
+            int page = ctx.queryParam("page") == null ? 0 : Integer.parseInt(ctx.queryParam("page"));
 
-            // Ordenar del más nuevo al más viejo (si el ID es incremental)
-            articulos.sort((a, b) -> Long.compare(b.getId(), a.getId()));
+            ArticuloService articuloService = ArticuloService.getInstancia();
+            EtiquetaService etiquetaService = EtiquetaService.getInstancia();
+
+            var articulos = articuloService.listarPaginado(page);
+            long total = articuloService.contarArticulos();
+            int totalPaginas = (int) Math.ceil(total / 5.0);
 
             ctx.attribute("articulos", articulos);
-            ctx.attribute("etiquetas", etiquetas);
+            ctx.attribute("etiquetas", etiquetaService.findAll());
+            ctx.attribute("page", page);
+            ctx.attribute("totalPaginas", totalPaginas);
 
             ctx.render("templates/index.html");
         });
