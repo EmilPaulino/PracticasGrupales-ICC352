@@ -1,44 +1,67 @@
 package edu.pucmm.eict.web.entidades;
 
-import java.util.ArrayList;
+import jakarta.persistence.*;
+
+import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
-public class Articulo {
-    long id;
+@Entity
+public class Articulo implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+
+    @Column(nullable = false, unique = true)
     private String titulo;
-    private String cuerpo;
-    private Usuario autor;
-    private Date fecha;
-    private ArrayList<Comentario> listaComentarios;
-    private ArrayList<Etiqueta> listaEtiquetas;
 
-    public Articulo(long id, String titulo, String cuerpo, Usuario autor, Date fecha) {
-        this.id = id;
+    @Lob //Para textos largos
+    @Column(nullable = false)
+    private String cuerpo;
+
+    @ManyToOne
+    @JoinColumn(name = "idUsuario", nullable = false)
+    private Usuario autor;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fecha;
+
+    @OneToMany(mappedBy = "articulo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Comentario> listaComentarios= new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(name = "articulo_etiqueta",joinColumns = @JoinColumn(name = "idArticulo"), inverseJoinColumns = @JoinColumn(name = "idEtiqueta"))
+    private Set<Etiqueta> listaEtiquetas = new HashSet<>();
+
+    public Articulo(){
+
+    }
+
+    public Articulo(String titulo, String cuerpo, Usuario autor) {
         this.titulo = titulo;
         this.cuerpo = cuerpo;
         this.autor = autor;
-        this.fecha = fecha;
-        this.listaComentarios = new ArrayList<Comentario>();
-        this.listaEtiquetas = new ArrayList<Etiqueta>();
+        this.fecha = new Date();
     }
 
-    public long getId() {
+    public Long getId() {
+
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
     public String getTitulo() {
+
         return titulo;
     }
 
     public void setTitulo(String titulo) {
+
         this.titulo = titulo;
     }
 
     public String getCuerpo() {
+
         return cuerpo;
     }
 
@@ -62,20 +85,19 @@ public class Articulo {
         this.fecha = fecha;
     }
 
-    public ArrayList<Comentario> getListaComentarios() {
-
+    public Set<Comentario> getListaComentarios() {
         return listaComentarios;
     }
 
-    public void setListaComentarios(ArrayList<Comentario> listaComentarios) {
+    public void setListaComentarios(Set<Comentario> listaComentarios) {
         this.listaComentarios = listaComentarios;
     }
 
-    public ArrayList<Etiqueta> getListaEtiquetas() {
+    public Set<Etiqueta> getListaEtiquetas() {
         return listaEtiquetas;
     }
 
-    public void setListaEtiquetas(ArrayList<Etiqueta> listaEtiquetas) {
+    public void setListaEtiquetas(Set<Etiqueta> listaEtiquetas) {
         this.listaEtiquetas = listaEtiquetas;
     }
 }

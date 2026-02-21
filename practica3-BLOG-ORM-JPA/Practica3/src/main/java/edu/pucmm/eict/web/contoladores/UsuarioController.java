@@ -2,19 +2,20 @@ package edu.pucmm.eict.web.contoladores;
 
 import edu.pucmm.eict.web.entidades.Usuario;
 import edu.pucmm.eict.web.servicios.UsuarioService;
-
-import java.util.ArrayList;
 import io.javalin.http.Context;
+import io.javalin.http.NotFoundResponse;
+
+import java.util.List;
 
 public class UsuarioController {
 
-    private UsuarioService usuarioService = UsuarioService.getInstancia();
+    private final UsuarioService usuarioService = UsuarioService.getInstancia();
 
     /*
      * Lista todos los usuarios
      */
     public void listar(Context ctx){
-        ArrayList<Usuario> usuarios = usuarioService.listarUsuarios();
+        List<Usuario> usuarios = usuarioService.findAll(); // ahora trae de H2
         ctx.attribute("usuarios", usuarios);
         ctx.render("/templates/usuarios/listarUsuarios.html");
     }
@@ -23,7 +24,7 @@ public class UsuarioController {
      * Muestra el formulario para crear usuario
      */
     public void formularioCrear(Context ctx){
-        ctx.render("templates/usuarios/formularioUsuario.html");
+        ctx.render("/templates/usuarios/formularioUsuario.html");
     }
 
     /*
@@ -31,19 +32,18 @@ public class UsuarioController {
      */
     public void crear(Context ctx){
         String username = ctx.formParam("username");
-        String name = ctx.formParam("nombre");
+        String nombre = ctx.formParam("nombre");
         String password = ctx.formParam("password");
-
         boolean administrator = ctx.formParam("administrator") != null;
         boolean autor = ctx.formParam("autor") != null;
 
-        boolean creado = usuarioService.registrarUsuario(
-                username, name, password, administrator, autor
-        );
+        Usuario usuario = new Usuario(username, nombre, password, administrator, autor);
 
-        if(!creado){
+        Usuario creado = usuarioService.crearUsuario(usuario); // servicio JPA/H2
+
+        if(creado == null){
             ctx.attribute("error", "El nombre de usuario ya existe");
-            ctx.render("templates/usuarios/formularioUsuario.html");
+            ctx.render("/templates/usuarios/formularioUsuario.html");
             return;
         }
 
@@ -55,13 +55,14 @@ public class UsuarioController {
      */
     public void formularioEditar(Context ctx){
         long id = Long.parseLong(ctx.pathParam("id"));
-        Usuario usuario = usuarioService.buscarUsuarioPorID(id);
+        Usuario usuario = usuarioService.find(id);
+
         if(usuario == null){
-            ctx.status(404);
-            return;
+            throw new NotFoundResponse("Usuario no encontrado");
         }
+
         ctx.attribute("usuario", usuario);
-        ctx.render("templates/usuarios/formularioUsuario.html");
+        ctx.render("/templates/usuarios/formularioUsuario.html");
     }
 
     /*
@@ -69,22 +70,32 @@ public class UsuarioController {
      */
     public void editar(Context ctx){
         long id = Long.parseLong(ctx.pathParam("id"));
+        Usuario usuario = usuarioService.find(id);
+
+        if(usuario == null){
+            throw new NotFoundResponse("Usuario no encontrado");
+        }
 
         String username = ctx.formParam("username");
-        String name = ctx.formParam("nombre");
+        String nombre = ctx.formParam("nombre");
         String password = ctx.formParam("password");
-
         boolean administrator = ctx.formParam("administrator") != null;
         boolean autor = ctx.formParam("autor") != null;
 
-        boolean actualizado = usuarioService.actualizarUsuario(
-                id, username, name, password, administrator, autor
-        );
+        usuario.setUsername(username);
+        usuario.setNombre(nombre);
+        if(password != null && !password.isEmpty()){
+            usuario.setPassword(password);
+        }
+        usuario.setAdministrator(administrator);
+        usuario.setAutor(autor);
 
-        if(!actualizado){
+        Usuario actualizado = usuarioService.actualizarUsuario(usuario);
+
+        if(actualizado == null){
             ctx.attribute("error", "El nombre de usuario ya existe");
-            ctx.attribute("usuario", usuarioService.buscarUsuarioPorID(id));
-            ctx.render("templates/usuarios/formularioUsuario.html");
+            ctx.attribute("usuario", usuarioService.find(id));
+            ctx.render("/templates/usuarios/formularioUsuario.html");
             return;
         }
 
@@ -96,7 +107,12 @@ public class UsuarioController {
      */
     public void eliminar(Context ctx){
         long id = Long.parseLong(ctx.pathParam("id"));
-        usuarioService.eliminarUsuario(id);
+        boolean eliminado = usuarioService.eliminarUsuario(id);
+
+        if(!eliminado){
+            throw new NotFoundResponse("Usuario no encontrado");
+        }
+
         ctx.redirect("/usuarios");
     }
 }

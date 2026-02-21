@@ -17,7 +17,6 @@
 <!-- Navbar -->
 <div th:replace="~{/templates/fragmentos/navbar.html :: navbar}"></div>
 
-
 <h2 class="mt-4 mb-4 text-center">Lista de Artículos</h2>
 
 <div class="crearArticulo">
@@ -58,11 +57,11 @@
             </td>
 
             <td class="text-center"
-                th:text="${#lists.size(a.listaComentarios)}">
+                th:text="${a.listaComentarios.size()}">
             </td>
 
             <td class="text-center"
-                th:text="${#lists.size(a.listaEtiquetas)}">
+                th:text="${a.listaEtiquetas.size()}">
             </td>
 
             <td class="text-center">

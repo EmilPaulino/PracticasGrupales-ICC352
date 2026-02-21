@@ -1,15 +1,31 @@
 package edu.pucmm.eict.web.entidades;
 
-public class Usuario {
-    private long id;
+import jakarta.persistence.*;
+import java.io.Serializable;
+
+@Entity
+public class Usuario implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //Para generar el ID automaticamente en la bd
+    private Long id;
+
+    @Column(unique = true, nullable = false) //No puede repetirse, tampoco puede ser nulo
     private String username;
+
+    @Column(nullable = false)
     private String nombre;
+
+    @Column(nullable = false)
     private String password;
+
     private boolean administrator;
+
     private boolean autor;
 
-    public Usuario(long id, String username, String nombre, String password, boolean administrator, boolean autor){
-        this.id = id;
+    public Usuario(){
+
+    }
+    public Usuario(String username, String nombre, String password, boolean administrator, boolean autor){
         this.username = username;
         this.nombre = nombre;
         this.password = password;
@@ -17,12 +33,8 @@ public class Usuario {
         this.autor = autor;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getUsername() {
@@ -49,7 +61,7 @@ public class Usuario {
         this.password = password;
     }
 
-    public boolean getAdministrator() {
+    public boolean isAdministrator() {
         return administrator;
     }
 
@@ -57,7 +69,7 @@ public class Usuario {
         this.administrator = administrator;
     }
 
-    public boolean getAutor() {
+    public boolean isAutor() {
         return autor;
     }
 

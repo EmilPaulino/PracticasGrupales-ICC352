@@ -12,51 +12,48 @@
 
         <div class="col-4 d-flex justify-content-end align-items-center">
 
-          <!-- Si NO está logueado -->
-          <a th:if="${session.user == null}"
+          <!-- NO logueado -->
+          <a th:if="${user == null}"
              class="btn btn-sm btn-outline-secondary"
              th:href="@{/login}">
             Iniciar Sesión
           </a>
 
-          <!-- Si está logueado -->
-          <div th:if="${session.user != null}" class="dropdown">
+          <!-- LOGUEADO -->
+          <div th:if="${user != null}" class="dropdown">
 
             <button class="nav-link dropdown-toggle"
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
-                    th:text="${session.user.nombre}">
+                    th:text="${user.nombre}">
               Usuario
             </button>
 
             <ul class="dropdown-menu dropdown-menu-end">
 
               <li>
-                <a class="dropdown-item"
-                   href="/">
+                <a class="dropdown-item" href="/">
                   Inicio
                 </a>
               </li>
 
               <!-- Solo admin -->
-              <li th:if="${session.user.administrator}">
-                <a class="dropdown-item"
-                   th:href="@{/usuarios}">
+              <li th:if="${user.administrator}">
+                <a class="dropdown-item" th:href="@{/usuarios}">
                   Gestionar Usuarios
                 </a>
               </li>
 
-              <li th:if="${session.user.administrator or session.user.autor}">
-                <a class="dropdown-item"
-                   th:href="@{/articulos}">
+              <!-- Admin o autor -->
+              <li th:if="${user.administrator or user.autor}">
+                <a class="dropdown-item" th:href="@{/articulos}">
                   Gestionar Artículos
                 </a>
               </li>
 
               <li>
-                <a class="dropdown-item"
-                   th:href="@{/logout}">
+                <a class="dropdown-item" th:href="@{/logout}">
                   Cerrar Sesión
                 </a>
               </li>
@@ -67,7 +64,6 @@
         </div>
       </div>
     </header>
-
   </div>
 
 </div>

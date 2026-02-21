@@ -1,22 +1,38 @@
 package edu.pucmm.eict.web.entidades;
 
-public class Comentario {
-    private long id;
+import jakarta.persistence.*;
+
+import java.io.Serializable;
+
+@Entity
+public class Comentario implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 1000) //No puede ser null y máx de caracteres 1000
     private String comentario;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name="idAutor", nullable = false) //Nombre de la columna de la clave foránea idAutor
     private Usuario autor;
 
-    public Comentario(long id, String comentario, Usuario autor) {
-        this.id = id;
+    @ManyToOne
+    @JoinColumn(name = "idArticulo", nullable = false)
+    private Articulo articulo;
+
+    public Comentario(){
+
+    }
+
+    public Comentario(String comentario, Usuario autor, Articulo articulo) {
         this.comentario = comentario;
         this.autor = autor;
+        this.articulo = articulo;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getComentario() {
@@ -33,5 +49,13 @@ public class Comentario {
 
     public void setAutor(Usuario autor) {
         this.autor = autor;
+    }
+
+    public Articulo getArticulo(){
+        return articulo;
+    }
+
+    public void setArticulo(Articulo articulo){
+        this.articulo = articulo;
     }
 }

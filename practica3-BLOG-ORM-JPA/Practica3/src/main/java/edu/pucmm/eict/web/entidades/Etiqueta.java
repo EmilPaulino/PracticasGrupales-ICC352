@@ -1,20 +1,31 @@
 package edu.pucmm.eict.web.entidades;
 
-public class Etiqueta {
-    private long id;
+import jakarta.persistence.*;
+import java.io.Serializable;
+import java.util.Set;
+
+@Entity
+public class Etiqueta implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
     private String etiqueta;
 
-    public Etiqueta(long id, String etiqueta){
-        this.id = id;
+    @ManyToMany(mappedBy = "listaEtiquetas")
+    private Set<Articulo> listaArticulos;
+
+    public Etiqueta(){
+
+    }
+
+    public Etiqueta(String etiqueta){
         this.etiqueta = etiqueta;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getEtiqueta() {
@@ -25,18 +36,25 @@ public class Etiqueta {
         this.etiqueta = etiqueta;
     }
 
-    //Sobrescribe equals() y hashCode() en Etiqueta usando el id para que contains() funcione correctamente
+    public Set<Articulo> getListaArticulos() {
+        return listaArticulos;
+    }
+
+    public void setListaArticulos(Set<Articulo> listaArticulos) {
+        this.listaArticulos = listaArticulos;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Etiqueta)) return false;
-        Etiqueta e = (Etiqueta) o;
-        return id == e.id;
+        Etiqueta other = (Etiqueta) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode() {
-        return Long.hashCode(id);
+        return 31;
     }
 }
 

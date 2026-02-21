@@ -6,9 +6,10 @@ import edu.pucmm.eict.web.contoladores.UsuarioController;
 import edu.pucmm.eict.web.entidades.Articulo;
 import edu.pucmm.eict.web.entidades.Usuario;
 import edu.pucmm.eict.web.servicios.ArticuloService;
+import edu.pucmm.eict.web.servicios.BootStrapServices;
+import edu.pucmm.eict.web.servicios.EtiquetaService;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
-import io.javalin.http.ForbiddenResponse;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.rendering.template.JavalinThymeleaf;
 
@@ -28,10 +29,13 @@ public class Main {
             config.fileRenderer(new JavalinThymeleaf());
         });
 
+        BootStrapServices.getInstancia().init();
+
         app.get("/", ctx -> {
             ArticuloService articuloService = ArticuloService.getInstancia();
-            var articulos = articuloService.listarArticulos();
-            var etiquetas = articuloService.listarEtiquetas();
+            var articulos = articuloService.findAll();
+            EtiquetaService etiquetaService = EtiquetaService.getInstancia();
+            var etiquetas = etiquetaService.findAll();
 
             // Ordenar del más nuevo al más viejo (si el ID es incremental)
             articulos.sort((a, b) -> Long.compare(b.getId(), a.getId()));
@@ -46,6 +50,12 @@ public class Main {
         LoginController loginController = new LoginController();
         app.get("/logout", loginController::logout);
         app.post("/procesarLogin", loginController::procesarLogin);
+        app.before(ctx -> {
+            Usuario user = ctx.sessionAttribute("user");
+            if (user != null) {
+                ctx.attribute("user", user);
+            }
+        });
 
         //Endpoints para Usuarios
         UsuarioController usuarioController = new UsuarioController();
@@ -55,7 +65,6 @@ public class Main {
         app.get("/usuarios/editar/{id}", usuarioController::formularioEditar);
         app.post("/usuarios/editar/{id}", usuarioController::editar);
         app.get("/usuarios/eliminar/{id}", usuarioController::eliminar);
-
 
         //Endpoints para Articulos
         ArticuloController articuloController = new ArticuloController();
@@ -87,7 +96,6 @@ public class Main {
         app.post("/articulos/{id}/etiquetas/agregar", articuloController::agregarEtiqueta);
         app.get("/articulos/{id}/etiquetas/eliminar/{etiquetaId}", articuloController::eliminarEtiqueta);
 
-
         //Filtros
 
         //Filtro para que no se pueda acceder al login cuando ya se inicio sesion
@@ -95,6 +103,7 @@ public class Main {
         app.before("/login", ctx -> {
             if (ctx.sessionAttribute("user") != null) {
                 ctx.redirect("/");
+                return;
             }
         });
 
@@ -114,11 +123,13 @@ public class Main {
         app.before("/articulos/*/etiquetas/*", ctx -> {
             if (ctx.sessionAttribute("user") == null) {
                 ctx.redirect("/login");
+                return;
             }
         });
         app.before("/articulos/*/comentarios/eliminar/*", ctx -> {
             if (ctx.sessionAttribute("user") == null) {
                 ctx.redirect("/login");
+                return;
             }
         });
 
@@ -126,6 +137,7 @@ public class Main {
         app.before("/articulos/*/comentarios/agregar", ctx -> {
             if (ctx.sessionAttribute("user") == null) {
                 ctx.redirect("/login");
+                return;
             }
         });
 
@@ -141,8 +153,9 @@ public class Main {
             return;
         }
 
-        if (!user.getAdministrator()) {
-            throw new ForbiddenResponse("Acceso denegado.");
+        if (!user.isAdministrator()) {
+            ctx.redirect("/");
+            return;
         }
     }
 
@@ -152,8 +165,9 @@ public class Main {
             ctx.redirect("/login");
             return;
         }
-        if (!user.getAdministrator() && !user.getAutor()) {
-            throw new ForbiddenResponse("Acceso Denegado.");
+        if (!user.isAdministrator() && !user.isAutor()) {
+            ctx.redirect("/");
+            return;
         }
     }
 }

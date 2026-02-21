@@ -1,132 +1,74 @@
 package edu.pucmm.eict.web.servicios;
 
 import edu.pucmm.eict.web.entidades.Usuario;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.Query;
 
-import java.util.ArrayList;
+public class UsuarioService extends GestionDb<Usuario> {
 
-public class UsuarioService {
     private static UsuarioService instancia;
-    private ArrayList<Usuario> losUsuarios = new ArrayList<Usuario>();
-    private long contadorID = 1;
 
-    private UsuarioService(){
-        losUsuarios.add(new Usuario(
-                contadorID,
-                "admin",
-                "Administrador",
-                "admin",
-                true,
-                true
-        ));
-        contadorID++;
+    private UsuarioService() {
+        super(Usuario.class);
     }
 
-    public static UsuarioService getInstancia(){
-        if(instancia == null){
+    public static UsuarioService getInstancia() {
+        if (instancia == null) {
             instancia = new UsuarioService();
         }
         return instancia;
     }
 
-    /*
-    * Esta función valída si existe un usuario con el nombre de usuario y contraseña
-    * enviado por parámetros, si existe lo true, sino retorna false.
-    * */
-    public Usuario validarLogin(String username, String password){
-        for(Usuario u : losUsuarios){
-            if(u.getUsername().equals(username) && u.getPassword().equals(password)){
-                return u;
-            }
+    /**
+     * Valida login por username y password
+     */
+    public Usuario validarLogin(String username, String password) {
+        EntityManager em = getEntityManager();
+        try {
+            Query q = em.createQuery(
+                    "SELECT u FROM Usuario u WHERE u.username = :username AND u.password = :password"
+            );
+            q.setParameter("username", username);
+            q.setParameter("password", password);
+            return (Usuario) q.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        } finally {
+            em.close();
         }
-        return null;
     }
 
-    /*
-    * Esta función registra un usuario nuevo.
-    * */
-    public boolean registrarUsuario(String username, String name, String password, boolean administrator, boolean autor){
-        if(!validarUsername(contadorID, username)){
-            return false;
-        }
-        losUsuarios.add(new Usuario(
-                contadorID,
-                username,
-                name,
-                password,
-                administrator,
-                autor
-        ));
-        contadorID++;
-        return true;
+    /**
+     * Crear un usuario
+     */
+    public Usuario crearUsuario(Usuario usuario) {
+        return crear(usuario);
     }
 
-    /*
-    * Esta función busca un usuario por ID.
-    * */
-    public Usuario buscarUsuarioPorID(long id){
-        for(Usuario u : losUsuarios){
-            if(u.getId() == id){
-                return u;
-            }
-        }
-        return null;
+    /**
+     * Editar un usuario
+     */
+    public Usuario actualizarUsuario(Usuario usuario) {
+        return editar(usuario);
     }
 
-    /*
-    * Esta función actualiza un usuario buscado por su id.
-    * */
-    public boolean actualizarUsuario(long id, String username, String name,
-                                     String password, boolean administrator, boolean autor){
-
-        Usuario user = buscarUsuarioPorID(id);
-        if(user == null){
-            return false;
-        }
-        if(!validarUsername(id, username)){
-            return false;
-        }
-        user.setUsername(username);
-        user.setNombre(name);
-        if(password != null && !password.isEmpty()){
-            user.setPassword(password);
-        }
-        user.setAdministrator(administrator);
-        user.setAutor(autor);
-
-        return true;
+    /**
+     * Eliminar un usuario por ID
+     */
+    public boolean eliminarUsuario(Long id) {
+        return eliminar(id);
     }
 
-    /*
-    * Esta función elimina un usuario de la lista.
-    * */
-    public boolean eliminarUsuario(long id){
-        Usuario user = buscarUsuarioPorID(id);
-        if(user == null){
-            return false;
+    /**
+    * Buscar por id
+    */
+    public Usuario buscarPorId(Long id) {
+        EntityManager em = getEntityManager();
+        try {
+            return em.find(Usuario.class, id);
+        } finally {
+            em.close();
         }
-        losUsuarios.remove(user);
-        return true;
     }
-
-    /*
-    * Esta función devuelve la lista de usuarios.
-    * */
-    public ArrayList<Usuario> listarUsuarios(){
-        return losUsuarios;
-    }
-
-    /*
-    * Esta función valída que un nombre de usuario (username) no
-    * se repita.
-    * */
-    public boolean validarUsername(long id, String username){
-        for (Usuario u : losUsuarios) {
-            if (u.getUsername().equalsIgnoreCase(username) && u.getId() != id) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
 }

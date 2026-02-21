@@ -122,7 +122,7 @@
         <div th:if="${session.user != null}">
             <form th:action="@{'/articulos/' + ${articulo.id} + '/comentarios/agregar'}" method="post">
                 <div class="mb-3">
-                    <textarea class="form-control" name="texto" placeholder="Escribe tu comentario aquí..."
+                    <textarea class="form-control" name="comentario" placeholder="Escribe tu comentario aquí..."
                               required></textarea>
                 </div>
                 <div class="mt-4">
