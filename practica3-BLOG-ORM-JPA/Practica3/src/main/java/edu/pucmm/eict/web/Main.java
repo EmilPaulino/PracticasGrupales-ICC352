@@ -31,20 +31,74 @@ public class Main {
 
         BootStrapServices.getInstancia().init();
 
+        //Endpoint para la /, es decir, index
         app.get("/", ctx -> {
-            int page = ctx.queryParam("page") == null ? 0 : Integer.parseInt(ctx.queryParam("page"));
+            // Página actual (por defecto 0)
+            int page = 0;
+            String pageParam = ctx.queryParam("page");
+            if (pageParam != null) {
+                try {
+                    page = Integer.parseInt(pageParam);
+                } catch (NumberFormatException e) {
+                    page = 0;
+                }
+            }
 
+            //Servicios
             ArticuloService articuloService = ArticuloService.getInstancia();
             EtiquetaService etiquetaService = EtiquetaService.getInstancia();
 
+            // Lista de artículos
             var articulos = articuloService.listarPaginado(page);
+            //Total de artículos
             long total = articuloService.contarArticulos();
+            // Total de páginas (5 artículos p/página)
             int totalPaginas = (int) Math.ceil(total / 5.0);
 
+            // Datos enviados a la vista
             ctx.attribute("articulos", articulos);
             ctx.attribute("etiquetas", etiquetaService.findAll());
             ctx.attribute("page", page);
             ctx.attribute("totalPaginas", totalPaginas);
+
+            ctx.render("templates/index.html");
+        });
+
+        //Endpoint para filtrar por etiqueta en el index
+        app.get("/etiqueta/{nombre}", ctx -> {
+
+            // Etiqueta seleccionada desde la URL
+            String nombre = ctx.pathParam("nombre");
+
+            // Página actual (por defecto 0)
+            int page = 0;
+            String pageParam = ctx.queryParam("page");
+            if (pageParam != null) {
+                try {
+                    page = Integer.parseInt(pageParam);
+                } catch (NumberFormatException e) {
+                    page = 0;
+                }
+            }
+
+            // Servicios
+            ArticuloService articuloService = ArticuloService.getInstancia();
+            EtiquetaService etiquetaService = EtiquetaService.getInstancia();
+
+            // Lista de artículos filtrados por etiqueta con paginación
+            var articulos = articuloService.listarPorEtiquetaPaginado(nombre, page);
+            // Total de artículos con esa etiqueta
+            long total = articuloService.contarPorEtiqueta(nombre);
+
+            // Total de páginas (5 artículos p/página)
+            int totalPaginas = (int) Math.ceil(total / 5.0);
+
+            // Datos enviados a la vista
+            ctx.attribute("articulos", articulos);
+            ctx.attribute("etiquetas", etiquetaService.findAll());
+            ctx.attribute("page", page);
+            ctx.attribute("totalPaginas", totalPaginas);
+            ctx.attribute("etiquetaSeleccionada", nombre); // Para mantener el filtro activo
 
             ctx.render("templates/index.html");
         });

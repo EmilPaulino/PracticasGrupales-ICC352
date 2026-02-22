@@ -56,19 +56,17 @@ public class ArticuloService extends GestionDb<Articulo> {
     @Override
     public List<Articulo> findAll() {
         EntityManager em = getEntityManager();
-        Query query = em.createQuery("select distinct a from Articulo a left join fetch a.listaComentarios left join fetch a.listaEtiquetas order by a.fecha desc");
+        Query query = em.createQuery("SELECT DISTINCT a FROM Articulo a LEFT JOIN FETCH a.listaComentarios LEFT JOIN FETCH a.listaEtiquetas ORDER BY a.fecha DESC");
         List<Articulo> listaArticulos = query.getResultList();
         em.close();
         return listaArticulos;
     }
 
-    /*
-    * Funcion para listar los articulos de forma paginada
-    * */
     public List<Articulo> listarPaginado(int page) {
         EntityManager em = getEntityManager();
         try {
-            return em.createQuery("SELECT DISTINCT a FROM Articulo a LEFT JOIN FETCH a.listaEtiquetas ORDER BY a.fecha DESC", Articulo.class)
+            return em.createQuery(
+                    "SELECT DISTINCT a FROM Articulo a LEFT JOIN FETCH a.listaEtiquetas ORDER BY a.fecha DESC", Articulo.class)
                     .setFirstResult(page * 5)
                     .setMaxResults(5)
                     .getResultList();
@@ -77,9 +75,6 @@ public class ArticuloService extends GestionDb<Articulo> {
         }
     }
 
-    /*
-    * Cuenta el total de artículos desde la bd
-    * */
     public long contarArticulos() {
         EntityManager em = getEntityManager();
         try {
@@ -102,4 +97,29 @@ public class ArticuloService extends GestionDb<Articulo> {
         }
     }
 
+    public List<Articulo> listarPorEtiquetaPaginado(String nombre, int page) {
+        EntityManager em = getEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT DISTINCT a FROM Articulo a JOIN FETCH a.listaEtiquetas e WHERE e.etiqueta = :nombre ORDER BY a.fecha DESC", Articulo.class)
+                    .setParameter("nombre", nombre)
+                    .setFirstResult(page * 5)
+                    .setMaxResults(5)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public long contarPorEtiqueta(String nombre) {
+        EntityManager em = getEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT COUNT(DISTINCT a) FROM Articulo a JOIN a.listaEtiquetas e WHERE e.etiqueta = :nombre", Long.class)
+                    .setParameter("nombre", nombre)
+                    .getSingleResult();
+        } finally {
+            em.close();
+        }
+    }
 }

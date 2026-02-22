@@ -41,8 +41,14 @@
         <div class="col-md-8">
 
             <!-- MENSAJE SI NO HAY ARTÍCULOS -->
-            <div th:if="${articulos.isEmpty()}" class="alert alert-info">
+            <div th:if="${articulos.isEmpty() and etiquetaSeleccionada == null}" class="alert alert-info">
                 No hay artículos publicados todavía.
+            </div>
+
+            <!-- MENSAJE SI LA ETIQUETA NO EXISTE -->
+            <div th:if="${articulos.isEmpty() and etiquetaSeleccionada != null}" class="alert alert-warning">
+                No hay artículos asociados a la etiqueta
+                <strong th:text="${etiquetaSeleccionada}"></strong>.
             </div>
 
             <div class="row mb-2" th:each="articulo : ${articulos}">
@@ -88,7 +94,9 @@
                     <!-- Anterior -->
                     <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
                         <a class="page-link"
-                           th:href="@{'/?page=' + ${page - 1}}">
+                           th:href="@{${etiquetaSeleccionada != null} ?
+                    '/etiqueta/' + ${etiquetaSeleccionada} + '?page=' + ${page - 1} :
+                    '/?page=' + ${page - 1}}">
                             Anterior
                         </a>
                     </li>
@@ -98,7 +106,9 @@
                         th:each="i : ${#numbers.sequence(0, totalPaginas - 1)}"
                         th:classappend="${i == page} ? 'active'">
                         <a class="page-link"
-                           th:href="@{'/?page=' + ${i}}"
+                           th:href="@{${etiquetaSeleccionada != null} ?
+                    '/etiqueta/' + ${etiquetaSeleccionada} + '?page=' + ${i} :
+                    '/?page=' + ${i}}"
                            th:text="${i + 1}"
                            th:aria-current="${i == page} ? 'page' : null">
                         </a>
@@ -108,7 +118,9 @@
                     <li class="page-item"
                         th:classappend="${page == totalPaginas - 1} ? 'disabled'">
                         <a class="page-link"
-                           th:href="@{'/?page=' + ${page + 1}}">
+                           th:href="@{${etiquetaSeleccionada != null} ?
+                    '/etiqueta/' + ${etiquetaSeleccionada} + '?page=' + ${page + 1} :
+                    '/?page=' + ${page + 1}}">
                             Siguiente
                         </a>
                     </li>
@@ -121,15 +133,20 @@
         <div class="col-md-4">
             <div class="border p-3">
 
-                <h5 class="fw-bold">Etiquetas</h5>
+                <h5 class="fw-bold">Filtrar Por Etiquetas</h5>
+
+                <div class="mb-2">
+                    <a href="/" class="fw-bold text-decoration-none">
+                        Ver todas
+                    </a>
+                </div>
 
                 <span th:if="${etiquetas.isEmpty()}">
                     <span class="text-muted">No hay etiquetas</span>
                 </span>
 
                 <span th:each="e, iter : ${etiquetas}">
-                    <span th:text="${e.etiqueta}"></span>
-                    <span th:if="${!iter.last}">, </span>
+                    <a th:href="@{'/etiqueta/' + ${e.etiqueta}}" th:text="${e.etiqueta}" class="text-decoration-none d-inline-block me-1"></a>
                 </span>
 
             </div>
