@@ -3,6 +3,7 @@ package edu.pucmm.eict.web.contoladores;
 import edu.pucmm.eict.web.entidades.Usuario;
 import edu.pucmm.eict.web.servicios.UsuarioService;
 import edu.pucmm.eict.web.util.EncryptUtil;
+import edu.pucmm.eict.web.util.LoginLogger;
 import io.javalin.http.Context;
 
 public class LoginController {
