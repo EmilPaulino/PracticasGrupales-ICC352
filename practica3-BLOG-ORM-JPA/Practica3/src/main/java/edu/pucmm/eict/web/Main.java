@@ -8,6 +8,8 @@ import edu.pucmm.eict.web.entidades.Usuario;
 import edu.pucmm.eict.web.servicios.ArticuloService;
 import edu.pucmm.eict.web.servicios.BootStrapServices;
 import edu.pucmm.eict.web.servicios.EtiquetaService;
+import edu.pucmm.eict.web.servicios.UsuarioService;
+import edu.pucmm.eict.web.util.EncryptUtil;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.staticfiles.Location;
@@ -109,6 +111,22 @@ public class Main {
         app.post("/procesarLogin", loginController::procesarLogin);
         app.before(ctx -> {
             Usuario user = ctx.sessionAttribute("user");
+            if (user == null) {
+                String cookie = ctx.cookie("rememberMe");
+                if (cookie != null) {
+                    try {
+                        String username = EncryptUtil.decrypt(cookie);
+                        UsuarioService usuarioService = new UsuarioService();
+                        Usuario usuario = usuarioService.buscarPorUsername(username);
+                        if (usuario != null) {
+                            ctx.sessionAttribute("user", usuario);
+                            user = usuario;
+                        }
+                    } catch (Exception e) {
+                        ctx.removeCookie("rememberMe");
+                    }
+                }
+            }
             if (user != null) {
                 ctx.attribute("user", user);
             }

@@ -4,12 +4,13 @@ import edu.pucmm.eict.web.entidades.Usuario;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 
 public class UsuarioService extends GestionDb<Usuario> {
 
     private static UsuarioService instancia;
 
-    private UsuarioService() {
+    public UsuarioService() {
         super(Usuario.class);
     }
 
@@ -70,5 +71,28 @@ public class UsuarioService extends GestionDb<Usuario> {
         } finally {
             em.close();
         }
+    }
+
+    /**
+     * Busca por username
+     */
+    public Usuario buscarPorUsername(String username) {
+
+        EntityManager em = getEntityManager();
+        Usuario usuario = null;
+
+        try {
+            TypedQuery<Usuario> query = em.createQuery(
+                    "SELECT u FROM Usuario u WHERE u.username = :username",
+                    Usuario.class
+            );
+            query.setParameter("username", username);
+            usuario = query.getSingleResult();
+        } catch (NoResultException e) {
+            usuario = null;
+        } finally {
+            em.close();
+        }
+        return usuario;
     }
 }
