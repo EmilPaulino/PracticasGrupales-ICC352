@@ -182,6 +182,31 @@ public class Main {
             }
         });
 
+        //Auto login si la cookie existe
+        app.before(ctx -> {
+
+            if (ctx.sessionAttribute("usuario") == null) {
+
+                String cookie = ctx.cookie("rememberMe");
+
+                if (cookie != null) {
+                    try {
+                        String username = EncryptUtil.decrypt(cookie);
+
+                        UsuarioService usuarioService = new UsuarioService();
+                        Usuario usuario = usuarioService.buscarPorUsername(username);
+
+                        if (usuario != null) {
+                            ctx.sessionAttribute("usuario", usuario);
+                        }
+
+                    } catch (Exception e) {
+                        ctx.removeCookie("rememberMe");
+                    }
+                }
+            }
+        });
+
         /*Filtros para que no se pueda acceder a ninguna ruta de gestionar usuarios
           si el usuario no es administrador*/
         app.before("/usuarios/*", ctx -> validarAdmin(ctx));
