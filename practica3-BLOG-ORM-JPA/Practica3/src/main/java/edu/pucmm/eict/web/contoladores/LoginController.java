@@ -30,7 +30,7 @@ public class LoginController {
                 ctx.cookie("rememberMe", encrypted, 7 * 24 * 60 * 60); // 1 semana
             }
 
-            // Registrar login en Cockroach (punto 7)
+            // Registrando login en Cockroach (punto 7)
             LoginLogger.log(user.getUsername());
 
             ctx.redirect("/");

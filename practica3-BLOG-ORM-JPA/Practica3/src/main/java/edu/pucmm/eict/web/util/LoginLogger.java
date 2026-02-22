@@ -7,6 +7,12 @@ public class LoginLogger {
 
     public static void log(String username) {
 
+        //Validación de que se haya configurado la variable de entorno
+        if (URL == null) {
+            System.out.println("JDBC_DATABASE_URL no configurada.");
+            return;
+        }
+
         try (Connection conn = DriverManager.getConnection(URL);
              PreparedStatement stmt = conn.prepareStatement(
                      "INSERT INTO login_log (username, fecha) VALUES (?, ?)")) {
