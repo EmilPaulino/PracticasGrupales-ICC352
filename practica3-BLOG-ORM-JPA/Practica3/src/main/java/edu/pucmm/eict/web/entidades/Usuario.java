@@ -18,6 +18,10 @@ public class Usuario implements Serializable {
     @Column(nullable = false)
     private String password;
 
+    @Lob
+    @Column(name = "foto", columnDefinition = "CLOB")
+    private String fotoBase64;
+
     private boolean administrator;
 
     private boolean autor;
@@ -75,5 +79,13 @@ public class Usuario implements Serializable {
 
     public void setAutor(boolean autor) {
         this.autor = autor;
+    }
+
+    public String getFotoBase64() {
+        return fotoBase64;
+    }
+
+    public void setFotoBase64(String fotoBase64) {
+        this.fotoBase64 = fotoBase64;
     }
 }

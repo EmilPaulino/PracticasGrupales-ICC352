@@ -22,7 +22,7 @@
 
 <div class="formUsuario">
 
-    <form th:action="${usuario != null} ? @{'/usuarios/editar/' + ${usuario.id}} : @{/usuarios/crear}" method="post">
+    <form th:action="${usuario != null} ? @{'/usuarios/editar/' + ${usuario.id}} : @{/usuarios/crear}" method="post" enctype="multipart/form-data">
 
         <!-- ID SOLO SI ES EDITAR -->
         <input type="hidden"
@@ -75,6 +75,12 @@
                    name="autor"
                    th:checked="${usuario != null} ? ${usuario.autor} : false">
             <label class="form-check-label">Autor</label>
+        </div>
+
+        <!-- FOTO -->
+        <div class="mb-3">
+            <label class="form-label">Foto del usuario</label>
+            <input type="file" name="foto" accept="image/*">
         </div>
 
         <!-- BOTONES -->

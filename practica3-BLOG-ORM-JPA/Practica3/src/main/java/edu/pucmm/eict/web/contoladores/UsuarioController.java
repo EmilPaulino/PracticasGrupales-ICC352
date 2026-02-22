@@ -37,7 +37,21 @@ public class UsuarioController {
         boolean administrator = ctx.formParam("administrator") != null;
         boolean autor = ctx.formParam("autor") != null;
 
+        String fotoBase64 = null;
+
+        var uploadedFile = ctx.uploadedFile("foto");
+
+        if(uploadedFile != null){
+            try{
+                byte[] bytes = uploadedFile.content().readAllBytes();
+                fotoBase64 = java.util.Base64.getEncoder().encodeToString(bytes);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+
         Usuario usuario = new Usuario(username, nombre, password, administrator, autor);
+        usuario.setFotoBase64(fotoBase64);
 
         Usuario creado = usuarioService.crearUsuario(usuario); // servicio JPA/H2
 
@@ -71,9 +85,21 @@ public class UsuarioController {
     public void editar(Context ctx){
         long id = Long.parseLong(ctx.pathParam("id"));
         Usuario usuario = usuarioService.find(id);
+        var uploadedFile = ctx.uploadedFile("foto");
+
 
         if(usuario == null){
             throw new NotFoundResponse("Usuario no encontrado");
+        }
+
+        if(uploadedFile != null){
+            try{
+                byte[] bytes = uploadedFile.content().readAllBytes();
+                String fotoBase64 = java.util.Base64.getEncoder().encodeToString(bytes);
+                usuario.setFotoBase64(fotoBase64);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
         }
 
         String username = ctx.formParam("username");

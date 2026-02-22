@@ -36,6 +36,7 @@
             <th>ID</th>
             <th>Nombre de Usuario</th>
             <th>Nombre</th>
+            <th>Foto</th>
             <th>Administrador</th>
             <th>Autor</th>
             <th>Acciones</th>
@@ -46,6 +47,18 @@
             <td class="text-center" th:text="${u.id}">1</td>
             <td class="text-center" th:text="${u.username}">admin</td>
             <td class="text-center" th:text="${u.nombre}">Administrador</td>
+            <td class="text-center">
+                <div th:if="${u.fotoBase64 != null}">
+                    <img th:src="'data:image/png;base64,' + ${u.fotoBase64}"
+                         width="60"
+                         height="60"
+                         style="object-fit: cover;"
+                         class="rounded-circle border"/>
+                </div>
+                <div th:if="${u.fotoBase64 == null}">
+                    <span>Sin foto</span>
+                </div>
+            </td>
             <td class="text-center">
                 <span th:text="${u.administrator} ? 'Sí' : 'No'"></span>
             </td>
