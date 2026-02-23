@@ -42,10 +42,10 @@ public class UsuarioController {
         var uploadedFile = ctx.uploadedFile("foto");
 
         if(uploadedFile != null){
-            try{
-                byte[] bytes = uploadedFile.content().readAllBytes();
+            try (var is = uploadedFile.content()) {
+                byte[] bytes = is.readAllBytes();
                 fotoBase64 = java.util.Base64.getEncoder().encodeToString(bytes);
-            }catch(Exception e){
+            } catch(Exception e){
                 e.printStackTrace();
             }
         }
@@ -53,7 +53,7 @@ public class UsuarioController {
         Usuario usuario = new Usuario(username, nombre, password, administrator, autor);
         usuario.setFotoBase64(fotoBase64);
 
-        Usuario creado = usuarioService.crearUsuario(usuario); // servicio JPA/H2
+        Usuario creado = usuarioService.crearUsuario(usuario);
 
         if(creado == null){
             ctx.attribute("error", "El nombre de usuario ya existe");
@@ -63,7 +63,6 @@ public class UsuarioController {
 
         ctx.redirect("/usuarios");
     }
-
     /*
      * Muestra el formulario para editar usuario
      */
@@ -87,17 +86,18 @@ public class UsuarioController {
         Usuario usuario = usuarioService.find(id);
         var uploadedFile = ctx.uploadedFile("foto");
 
-
         if(usuario == null){
             throw new NotFoundResponse("Usuario no encontrado");
         }
 
         if(uploadedFile != null){
-            try{
-                byte[] bytes = uploadedFile.content().readAllBytes();
-                String fotoBase64 = java.util.Base64.getEncoder().encodeToString(bytes);
-                usuario.setFotoBase64(fotoBase64);
-            }catch(Exception e){
+            try (var is = uploadedFile.content()) {
+                byte[] bytes = is.readAllBytes();
+                if(bytes.length > 0){ // Se actualiza la foto solo si se sube otra nueva
+                    String fotoBase64 = java.util.Base64.getEncoder().encodeToString(bytes);
+                    usuario.setFotoBase64(fotoBase64);
+                }
+            } catch(Exception e){
                 e.printStackTrace();
             }
         }

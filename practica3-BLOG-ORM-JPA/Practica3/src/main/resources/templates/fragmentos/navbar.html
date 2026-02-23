@@ -22,12 +22,20 @@
           <!-- LOGUEADO -->
           <div th:if="${user != null}" class="dropdown">
 
-            <button class="nav-link dropdown-toggle"
+            <button class="nav-link dropdown-toggle d-flex align-items-center gap-2"
                     type="button"
                     data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    th:text="${user.nombre}">
-              Usuario
+                    aria-expanded="false">
+
+              <img th:src="${user.fotoBase64 != null and !#strings.isEmpty(user.fotoBase64)}
+                 ? 'data:image/png;base64,' + ${user.fotoBase64}
+                 : '/img/user-default.jpg'"
+                   width="32"
+                   height="32"
+                   class="rounded-circle border"
+                   style="object-fit: cover;"/>
+
+              <span th:text="${user.nombre}">Usuario</span>
             </button>
 
             <ul class="dropdown-menu dropdown-menu-end">
