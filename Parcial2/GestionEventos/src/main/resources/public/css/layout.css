@@ -1,0 +1,25 @@
+body {
+    min-height: 100vh;
+}
+
+.dropdown-toggle {
+    outline: 0;
+}
+
+/* Navbar fijo arriba */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+}
+
+
+/* Compensar navbar fijo en móvil */
+@media (max-width: 991.98px) {
+    main {
+        margin-left: 0 !important;
+        margin-top: 56px !important;
+    }
+}
