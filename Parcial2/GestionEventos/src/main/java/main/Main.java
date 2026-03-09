@@ -9,6 +9,7 @@ import main.services.BootStrapServices;
 import io.javalin.rendering.template.JavalinThymeleaf;
 import main.services.GestionDb;
 import main.services.UsuarioService;
+import io.javalin.http.Context;
 
 public class Main {
     public static void main(String[] args){
@@ -26,45 +27,30 @@ public class Main {
                 ctx.render("templates/panel/panel.html");
             });
 
+            //Rutas para USUARIO
             config.routes.get("/usuarios", UsuarioController::listar);
+            config.routes.post("/usuarios/crear", UsuarioController::crear);
+            config.routes.get("/usuarios/nuevo", UsuarioController::formNuevo);
 
-            //Los usuarios se crean como PARTICIPANTES, el ADMIN decide si convertirlos en ORGANIZADOR
-            config.routes.post("/registrar", ctx -> {
+            //Rutas para LOGIN
+            config.routes.get("/login", UsuarioController::loginForm);
+            config.routes.post("/login", UsuarioController::login);
+            config.routes.get("/logout", UsuarioController::logout);
+            /*
+            //Para proteger las rutas
+            config.routes.before("/home*", ctx -> {
 
-                String username = ctx.formParam("username");
-                String email = ctx.formParam("email");
-                String password = ctx.formParam("password");
+                Usuario usuario = ctx.sessionAttribute("usuario");
 
-                UsuarioService usuarioService = UsuarioService.getInstancia();
-                GestionDb<Rol> rolDb = new GestionDb<>(Rol.class);
-
-                Rol rolParticipante = null;
-
-                for(Rol r : rolDb.findAll()){
-                    if(r.getRol().equals("Participante")){
-                        rolParticipante = r;
-                        break;
-                    }
+                if(usuario == null){
+                    ctx.redirect("/login");
                 }
 
-                Usuario usuario = new Usuario(
-                        username,
-                        email,
-                        password,
-                        true,
-                        rolParticipante
-                );
-
-                usuarioService.crear(usuario);
-
-                ctx.redirect("/login");
             });
-
+            */
         });
 
         BootStrapServices.getInstancia().init();
-
         app.start(7000);
-
     }
 }

@@ -29,7 +29,11 @@
            class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
            data-bs-toggle="dropdown">
             <img src="/img/sinFoto.png" alt="" width="32" height="32" class="rounded-circle me-2">
-            <strong>Admin</strong>
+            <strong>
+                <span th:if="${session.usuario != null}"
+                      th:text="${session.usuario.nombre}">
+                </span>
+            </strong>
         </a>
         <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end text-small shadow">
             <li><a class="dropdown-item" th:href="@{/logout}">Sign out</a></li>

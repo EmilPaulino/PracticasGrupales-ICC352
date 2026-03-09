@@ -36,4 +36,16 @@ public class UsuarioService {
     public boolean eliminar(Long id) {
         return db.eliminar(id);
     }
+
+    public Usuario login(String username, String password){
+
+        for(Usuario u : findAll()){
+            if(u.getNombre().equals(username) &&
+                    u.getPassword().equals(password)){
+                return u;
+            }
+        }
+
+        return null;
+    }
 }
