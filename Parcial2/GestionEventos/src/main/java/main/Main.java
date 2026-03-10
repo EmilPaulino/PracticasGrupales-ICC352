@@ -52,7 +52,7 @@ public class Main {
 
             //Nueva manera de implementar rutas
             config.routes.get("/", ctx -> {
-                ctx.result("Hello World!");
+                ctx.render("/templates/prueba/prueba.html");
             });
             config.routes.get("/panel", ctx -> {
                 ctx.render("templates/panel/panel.html");
