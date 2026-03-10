@@ -10,8 +10,10 @@
 
 <body>
 
-<div class="container vh-100 d-flex justify-content-center align-items-center">
+<div th:replace="~{templates/fragments/layout.html :: navbar-top-public}"></div>
+<div th:replace="~{templates/fragments/layout.html :: offcanvas-public}"></div>
 
+<div class="container d-flex justify-content-center align-items-center" style="height: calc(100vh - 56px);">
     <div class="card shadow-lg login-card">
 
         <div class="card-body p-4">
@@ -77,4 +79,6 @@
 </div>
 
 </body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/sidebar.js}"></script></body>
 </html>
