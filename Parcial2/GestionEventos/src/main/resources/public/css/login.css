@@ -1,0 +1,21 @@
+body{
+    min-height:100vh;
+}
+
+.login-card{
+    width: 400px;
+    border-radius: 12px;
+}
+
+.login-title{
+    font-weight:600;
+}
+
+.form-control{
+    border-radius:8px;
+}
+
+.btn-login{
+    border-radius:8px;
+    font-weight:500;
+}

@@ -37,15 +37,24 @@ public class UsuarioService {
         return db.eliminar(id);
     }
 
-    public Usuario login(String username, String password){
+    public Usuario login(String email, String password){
 
         for(Usuario u : findAll()){
-            if(u.getNombre().equals(username) &&
+            if(u.getEmail().equals(email) &&
                     u.getPassword().equals(password)){
                 return u;
             }
         }
 
+        return null;
+    }
+
+    public Usuario buscarPorEmail(String email){
+        for(Usuario u : findAll()){
+            if(u.getEmail().equals(email)){
+                return u;
+            }
+        }
         return null;
     }
 }

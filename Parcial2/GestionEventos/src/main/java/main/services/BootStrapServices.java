@@ -45,13 +45,13 @@ public class BootStrapServices {
         boolean existeParticipante = false;
 
         for(Rol r : rolDb.findAll()){
-            if(r.getRol().equals("ADMIN")){
+            if(r.getRol().equals("Admin")){
                 existeAdmin = true;
             }
-            if(r.getRol().equals("ORGANIZADOR")){
+            if(r.getRol().equals("Organizador")){
                 existeOrganizador = true;
             }
-            if(r.getRol().equals("PARTICIPANTE")){
+            if(r.getRol().equals("Participante")){
                 existeParticipante = true;
             }
         }
