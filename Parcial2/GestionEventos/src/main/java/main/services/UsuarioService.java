@@ -21,6 +21,10 @@ public class UsuarioService {
         return db.findAll();
     }
 
+    public List<Usuario> findPaginado(int pagina, int tamano) {
+        return db.findPaginado(pagina, tamano);
+    }
+
     public Usuario find(Long id) {
         return db.find(id);
     }
@@ -56,5 +60,9 @@ public class UsuarioService {
             }
         }
         return null;
+    }
+
+    public long contarTotal() {
+        return db.contarTotal();
     }
 }

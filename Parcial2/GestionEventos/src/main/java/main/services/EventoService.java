@@ -37,6 +37,21 @@ public class EventoService {
         return db.eliminar(id);
     }
 
+    public List<Evento> findPaginado(int pagina, int tamano) {
+        return db.findPaginado(pagina, tamano);
+    }
+
+    public long contarTotal() {
+        return db.contarTotal();
+    }
+
+    //Lista de eventos que están publicados
+    public List<Evento> findPublicados(){
+        return db.findAll().stream()
+                .filter(e -> e.isPublicado() && !e.isCancelado())
+                .toList();
+    }
+
     //Cancelar evento
     public Evento cancelar(Long id){
         Evento evento = find(id);
@@ -52,24 +67,20 @@ public class EventoService {
     //Publicar evento
     public Evento publicar(Long id){
         Evento evento = find(id);
-
         if(evento != null){
             evento.setPublicado(true);
             return editar(evento);
         }
-
         return null;
     }
 
     //Despublicar evento
     public Evento desPublicar(Long id){
         Evento evento = find(id);
-
         if(evento != null){
             evento.setPublicado(false);
             return editar(evento);
         }
-
         return null;
     }
 }

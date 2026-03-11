@@ -16,8 +16,26 @@ public class UsuarioController {
     private static UsuarioService usuarioService = UsuarioService.getInstancia();
 
     public static void listar(Context ctx) {
-        List<Usuario> usuarios = usuarioService.findAll();
-        ctx.render("templates/usuarios/listarUsuarios.html", Map.of("usuarios", usuarios));
+        int pagina = 0;
+        String paginaParam = ctx.queryParam("pagina");
+        if (paginaParam != null) {
+            try {
+                pagina = Integer.parseInt(paginaParam);
+            } catch (NumberFormatException e) {
+                pagina = 0;
+            }
+        }
+
+        int tamano = 10;
+        long total = UsuarioService.getInstancia().contarTotal();
+        int totalPaginas = (int) Math.ceil((double) total / tamano);
+
+        Map<String, Object> modelo = new HashMap<>();
+        modelo.put("usuarios", UsuarioService.getInstancia().findPaginado(pagina, tamano));
+        modelo.put("paginaActual", pagina);
+        modelo.put("totalPaginas", totalPaginas);
+
+        ctx.render("templates/usuarios/listarUsuarios.html", modelo);
     }
 
     public static void crear(Context ctx){

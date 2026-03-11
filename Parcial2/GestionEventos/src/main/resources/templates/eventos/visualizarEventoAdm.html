@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${evento.titulo}">Ver Evento</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+</head>
+<body class="bg-light">
+
+<div th:replace="~{templates/fragments/layout.html :: navbar-top}"></div>
+
+<div class="d-flex">
+
+    <div th:replace="~{templates/fragments/layout.html :: sidebar}"></div>
+
+    <main class="flex-fill p-4" style="margin-left: 260px; margin-top: 56px;">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3" th:text="${evento.titulo}"></h1>
+            <a href="/eventos" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- Info principal -->
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Detalles del Evento</h5>
+                        <p class="text-muted" th:text="${evento.descripcion}"></p>
+                        <hr>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-calendar-event me-2 text-primary"></i>
+                                <strong>Fecha:</strong>
+                                <span th:text="${#temporals.format(evento.fecha, 'dd MMM yyyy')}"></span>
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-clock me-2 text-primary"></i>
+                                <strong>Hora:</strong>
+                                <span th:text="${#temporals.format(evento.hora, 'hh:mm a')}"></span>
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-geo-alt me-2 text-primary"></i>
+                                <strong>Lugar:</strong>
+                                <span th:text="${evento.lugar}"></span>
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-person me-2 text-primary"></i>
+                                <strong>Organizador:</strong>
+                                <span th:text="${evento.organizador.nombre}"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Estadísticas -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">Estadísticas</h5>
+                        <div class="row g-3 text-center">
+                            <div class="col-md-4">
+                                <div class="border rounded p-3">
+                                    <i class="bi bi-people fs-3 text-primary d-block mb-2"></i>
+                                    <h4 class="mb-0" th:text="${inscritos}">0</h4>
+                                    <small class="text-muted">Total Inscritos</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-3">
+                                    <i class="bi bi-person-check fs-3 text-success d-block mb-2"></i>
+                                    <h4 class="mb-0" th:text="${asistentes}">0</h4>
+                                    <small class="text-muted">Total Asistentes</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-3">
+                                    <i class="bi bi-percent fs-3 text-warning d-block mb-2"></i>
+                                    <h4 class="mb-0" th:text="${porcentaje} + '%'">0%</h4>
+                                    <small class="text-muted">Porcentaje Asistencia</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficos -->
+                <div id="graficas" th:data-evento-id="${evento.id}">
+                    <div class="row g-4 mt-2">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3">Inscripciones por día</h6>
+                                    <canvas id="graficaInscripciones"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3">Asistencia por hora</h6>
+                                    <canvas id="graficaAsistencia"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Info lateral -->
+            <div class="col-lg-4">
+
+                <!-- Estado -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Estado</h5>
+                        <span th:if="${evento.cancelado}" class="badge text-bg-danger fs-6">Cancelado</span>
+                        <span th:if="${!evento.cancelado and evento.publicado}" class="badge text-bg-success fs-6">Publicado</span>
+                        <span th:if="${!evento.cancelado and !evento.publicado}" class="badge text-bg-secondary fs-6">Sin Publicar</span>
+                    </div>
+                </div>
+
+                <!-- Cupos -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Cupos</h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Inscritos</span>
+                            <strong th:text="${inscritos}"></strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Cupo máximo</span>
+                            <strong th:text="${evento.cupoMaximo}"></strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Disponibles</span>
+                            <strong th:text="${evento.cupoMaximo - inscritos}"></strong>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar"
+                                 role="progressbar"
+                                 th:style="'width: ' + ${inscritos > 0 ? (inscritos * 100) / evento.cupoMaximo : 0} + '%'"
+                                 th:classappend="${inscritos >= evento.cupoMaximo} ? 'bg-danger' : 'bg-success'">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="card" th:if="${!evento.cancelado}">
+                    <div class="card-body d-flex flex-column gap-2">
+                        <h5 class="card-title mb-1">Acciones</h5>
+
+                        <a th:href="@{/eventos/editar/{id}(id=${evento.id})}"
+                           class="btn btn-outline-primary w-100">
+                            <i class="bi bi-pencil-square me-1"></i> Editar
+                        </a>
+
+                        <form th:if="${!evento.publicado}"
+                              th:action="@{/eventos/publicar/{id}(id=${evento.id})}" method="post">
+                            <button type="submit" class="btn btn-outline-success w-100">
+                                <i class="bi bi-file-arrow-up me-1"></i> Publicar
+                            </button>
+                        </form>
+
+                        <form th:if="${evento.publicado}"
+                              th:action="@{/eventos/despublicar/{id}(id=${evento.id})}" method="post">
+                            <button type="submit" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-file-arrow-down me-1"></i> Despublicar
+                            </button>
+                        </form>
+
+                        <button type="button"
+                                class="btn btn-outline-danger w-100"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalCancelar">
+                            <i class="bi bi-x-circle me-1"></i> Cancelar Evento
+                        </button>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Modal Cancelar -->
+<div class="modal fade" id="modalCancelar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar cancelación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro que deseas cancelar este evento?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
+                <form th:action="@{/eventos/cancelar/{id}(id=${evento.id})}" method="post">
+                    <button type="submit" class="btn btn-danger">Cancelar Evento</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/sidebar.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const eventoId = document.getElementById('graficas').getAttribute('data-evento-id');
+
+    fetch(`/eventos/inscripciones-por-dia/${eventoId}`)
+        .then(res => res.json())
+        .then(data => {
+            new Chart(document.getElementById('graficaInscripciones'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: 'Inscripciones',
+                        data: Object.values(data),
+                        backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                        borderColor: 'rgba(13, 110, 253, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            });
+        });
+
+    fetch(`/eventos/asistencia-por-hora/${eventoId}`)
+        .then(res => res.json())
+        .then(data => {
+            new Chart(document.getElementById('graficaAsistencia'), {
+                type: 'line',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: 'Asistentes',
+                        data: Object.values(data),
+                        backgroundColor: 'rgba(25, 135, 84, 0.2)',
+                        borderColor: 'rgba(25, 135, 84, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            });
+        });
+</script>
+</body>
+</html>

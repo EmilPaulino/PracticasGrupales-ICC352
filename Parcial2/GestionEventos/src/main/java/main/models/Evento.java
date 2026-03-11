@@ -115,4 +115,6 @@ public class Evento {
     public void setOrganizador(Usuario organizador) {
         this.organizador = organizador;
     }
+
+
 }

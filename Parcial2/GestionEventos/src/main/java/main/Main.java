@@ -61,9 +61,7 @@ public class Main {
             });
 
             //Ruta principal
-            config.routes.get("/", ctx -> {
-                ctx.render("/templates/prueba/prueba.html");
-            });
+            config.routes.get("/", EventoController::listarPublicados);
 
             config.routes.get("/panel", ctx -> {
                 ctx.render("templates/panel/panel.html");
@@ -94,13 +92,15 @@ public class Main {
             config.routes.get("/eventos", EventoController::listar);
             config.routes.get("/eventos/nuevo", EventoController::formNuevo);
             config.routes.post("/eventos/crear", EventoController::crear);
-
             config.routes.get("/eventos/editar/{id}", EventoController::formEditar);
             config.routes.post("/eventos/editar/{id}", EventoController::editar);
-
-            config.routes.get("/eventos/cancelar/{id}", EventoController::cancelar);
-            config.routes.get("/eventos/publicar/{id}", EventoController::publicar);
-            config.routes.get("/eventos/despublicar/{id}", EventoController::desPublicar);
+            config.routes.post("/eventos/cancelar/{id}", EventoController::cancelar);
+            config.routes.post("/eventos/publicar/{id}", EventoController::publicar);
+            config.routes.post("/eventos/despublicar/{id}", EventoController::desPublicar);
+            config.routes.post("/eventos/eliminar/{id}", EventoController::eliminar);
+            config.routes.get("/eventos/visualizar/{id}", EventoController::visualizar);
+            config.routes.get("/eventos/inscripciones-por-dia/{id}", EventoController::inscripcionesPorDia);
+            config.routes.get("/eventos/asistencia-por-hora/{id}", EventoController::asistenciaPorHora);
 
             //Protección de rutas de eventos
             config.routes.before("/eventos/*", ctx -> {
@@ -112,8 +112,8 @@ public class Main {
                     return;
                 }
 
-                if (!usuario.getRol().equals("ORGANIZADOR") &&
-                        !usuario.getRol().equals("ADMIN")) {
+                if (!usuario.getRol().getRol().equals("Organizador") &&
+                        !usuario.getRol().getRol().equals("Admin")) {
 
                     ctx.status(403);
                     ctx.result("No autorizado");

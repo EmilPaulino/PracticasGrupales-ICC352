@@ -1,6 +1,7 @@
 package main.services;
 
 import jakarta.persistence.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import java.util.List;
 
@@ -102,6 +103,32 @@ public class GestionDb<T> {
             em.close();
         }
 
+    }
+
+    public List<T> findPaginado(int pagina, int tamano) {
+        EntityManager em = getEntityManager();
+        try {
+            CriteriaQuery<T> query = em.getCriteriaBuilder().createQuery(claseEntidad);
+            query.select(query.from(claseEntidad));
+            return em.createQuery(query)
+                    .setFirstResult(pagina * tamano)
+                    .setMaxResults(tamano)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public long contarTotal() {
+        EntityManager em = getEntityManager();
+        try {
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Long> query = cb.createQuery(Long.class);
+            query.select(cb.count(query.from(claseEntidad)));
+            return em.createQuery(query).getSingleResult();
+        } finally {
+            em.close();
+        }
     }
 
 }
