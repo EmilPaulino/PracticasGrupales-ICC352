@@ -99,6 +99,7 @@ public class Main {
             config.routes.post("/eventos/despublicar/{id}", EventoController::desPublicar);
             config.routes.post("/eventos/eliminar/{id}", EventoController::eliminar);
             config.routes.get("/eventos/visualizar/{id}", EventoController::visualizar);
+            config.routes.get("/eventos/ver/{id}", EventoController::visualizarPublico);
             config.routes.get("/eventos/inscripciones-por-dia/{id}", EventoController::inscripcionesPorDia);
             config.routes.get("/eventos/asistencia-por-hora/{id}", EventoController::asistenciaPorHora);
 

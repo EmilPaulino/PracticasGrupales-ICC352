@@ -210,4 +210,30 @@ public class EventoController {
         ctx.json(porHora);
     }
 
+    public static void visualizarPublico(Context ctx) {
+        Long id = Long.parseLong(ctx.pathParam("id"));
+        Evento evento = EventoService.getInstancia().find(id);
+
+        if (evento == null || !evento.isPublicado()) {
+            ctx.redirect("/eventos/publicos");
+            return;
+        }
+
+        long inscritos = InscripcionService.getInstancia().contarPorEvento(id);
+
+        boolean yaInscrito = false;
+        Usuario usuario = (Usuario) ctx.sessionAttribute("usuario");
+
+        if (usuario != null) {
+            yaInscrito = InscripcionService.getInstancia().existeInscripcion(id, usuario.getId());
+        }
+
+        Map<String, Object> modelo = new HashMap<>();
+        modelo.put("evento", evento);
+        modelo.put("inscritos", inscritos);
+        modelo.put("yaInscrito", yaInscrito);
+
+        ctx.render("templates/eventos/visualizarEvento.html", modelo);
+    }
+
 }
