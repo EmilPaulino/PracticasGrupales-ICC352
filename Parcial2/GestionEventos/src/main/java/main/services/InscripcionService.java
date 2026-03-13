@@ -3,7 +3,11 @@ package main.services;
 import main.models.Inscripcion;
 import main.models.Evento;
 import main.models.Usuario;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 public class InscripcionService {
 
@@ -49,5 +53,45 @@ public class InscripcionService {
         return db.findAll().stream()
                 .anyMatch(i -> i.getUsuario().getId().equals(usuarioId)
                         && i.getEvento().getId().equals(eventoId));
+    }
+
+    public Inscripcion inscribir(Usuario usuario, Evento evento){
+
+        if(existeInscripcion(usuario.getId(), evento.getId())){
+            return null;
+        }
+
+        if(contarPorEvento(evento.getId()) >= evento.getCupoMaximo()){
+            return null;
+        }
+
+        String token = UUID.randomUUID().toString();
+
+        Inscripcion inscripcion = new Inscripcion(
+                LocalDate.now(),
+                LocalTime.now(),
+                token,
+                usuario,
+                evento
+        );
+
+        return crear(inscripcion);
+    }
+
+    public boolean marcarAsistencia(Long inscripcionId) {
+        Inscripcion inscripcion = db.find(inscripcionId);
+
+        if (inscripcion == null) {
+            return false;
+        }
+
+        if (inscripcion.isAsistio()) {
+            return false; // ya fue marcada
+        }
+
+        inscripcion.setAsistio(true);
+        db.editar(inscripcion);
+
+        return true;
     }
 }
