@@ -1,0 +1,68 @@
+body { font-family: 'DM Sans', sans-serif; background: #f8f9fa; }
+
+.page-header {
+    background: white;
+    border-bottom: 1px solid #e9ecef;
+    padding-top: 75px;
+    padding-bottom: 30px;
+}
+.page-header h1 { font-size: 1.8rem; font-weight: 700; color: #0f172a; margin: 0; }
+.page-header p { color: #64748b; margin: 6px 0 0; font-size: 0.95rem; }
+
+.section { padding: 36px 0 60px; }
+
+.inscripcion-card {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #e9ecef;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+.inscripcion-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.07); }
+
+.card-top { height: 4px; background: linear-gradient(90deg, #1d4ed8, #60a5fa); }
+.card-top.pasado    { background: #e2e8f0; }
+.card-top.cancelado { background: #fca5a5; }
+
+.card-body { padding: 1.35rem 1.5rem; }
+
+.evento-titulo { font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+
+.info-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.83rem; color: #64748b; margin-bottom: 3px;
+}
+.info-item i { color: #3b82f6; width: 14px; }
+
+.estado-badge { font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+
+.card-footer-custom {
+    padding: 0.9rem 1.5rem;
+    background: #fafafa;
+    border-top: 1px solid #f1f5f9;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+
+.btn-cancelar {
+    background: none; border: 1px solid #fca5a5; color: #dc2626;
+    border-radius: 8px; font-size: 0.82rem; font-weight: 500;
+    padding: 6px 14px; cursor: pointer; transition: background 0.15s;
+}
+.btn-cancelar:hover { background: #fef2f2; }
+
+.btn-ver {
+    background: none; border: 1px solid #bfdbfe; color: #1d4ed8;
+    border-radius: 8px; font-size: 0.82rem; font-weight: 500;
+    padding: 6px 14px; text-decoration: none; transition: background 0.15s;
+}
+.btn-ver:hover { background: #eff6ff; color: #1d4ed8; }
+
+.qr-toggle {
+    font-size: 0.78rem; color: #64748b; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
+    border: none; background: none; padding: 0;
+}
+.qr-toggle:hover { color: #1d4ed8; }
+
+.empty-state { text-align: center; padding: 80px 0; color: #94a3b8; }
+.empty-state i { font-size: 2.5rem; display: block; margin-bottom: 1rem; opacity: 0.4; }

@@ -45,7 +45,7 @@ public class UsuarioController {
 
         Long rolId = Long.parseLong(ctx.formParam("rol"));
 
-        boolean activo = ctx.formParam("isActivo") != null;
+        boolean activo = ctx.formParam("activo") != null;
 
         Rol rol = RolService.getInstancia().find(rolId);
 
@@ -72,19 +72,20 @@ public class UsuarioController {
         ctx.redirect("/usuarios");
     }
 
-    public static void formNuevo(Context ctx){
-        List<Rol> roles = RolService.getInstancia().findAll();
+    public static void formNuevo(Context ctx) {
         Map<String, Object> model = new HashMap<>();
-        model.put("roles", roles);
+        model.put("roles", RolService.getInstancia().findAll());
+        model.put("usuario", null);   // ← ESTA ES LA SOLUCIÓN
         ctx.render("templates/usuarios/formularioUsuarios.html", model);
     }
 
-    public static void formEditar(Context ctx){
+    public static void formEditar(Context ctx) {
         Long id = Long.parseLong(ctx.pathParam("id"));
         Usuario usuario = UsuarioService.getInstancia().find(id);
-        ctx.attribute("usuario", usuario);
-        ctx.attribute("roles", RolService.getInstancia().findAll());
-        ctx.render("templates/usuarios/formularioUsuarios.html");
+        Map<String, Object> model = new HashMap<>();
+        model.put("usuario", usuario);
+        model.put("roles", RolService.getInstancia().findAll());
+        ctx.render("templates/usuarios/formularioUsuarios.html", model);
     }
 
     public static void editar(Context ctx){

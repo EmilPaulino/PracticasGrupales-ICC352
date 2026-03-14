@@ -35,6 +35,8 @@ public class InscripcionService {
         return db.crear(inscripcion);
     }
 
+    public Inscripcion editar(Inscripcion inscripcion) { return db.editar(inscripcion); }
+
     public boolean eliminar(Long id) {
         return db.eliminar(id);
     }
@@ -78,20 +80,9 @@ public class InscripcionService {
         return crear(inscripcion);
     }
 
-    public boolean marcarAsistencia(Long inscripcionId) {
-        Inscripcion inscripcion = db.find(inscripcionId);
-
-        if (inscripcion == null) {
-            return false;
-        }
-
-        if (inscripcion.isAsistio()) {
-            return false; // ya fue marcada
-        }
-
-        inscripcion.setAsistio(true);
-        db.editar(inscripcion);
-
-        return true;
+    public List<Inscripcion> findPorUsuario(Long usuarioId) {
+        return db.findAll().stream()
+                .filter(i -> i.getUsuario().getId().equals(usuarioId))
+                .toList();
     }
 }

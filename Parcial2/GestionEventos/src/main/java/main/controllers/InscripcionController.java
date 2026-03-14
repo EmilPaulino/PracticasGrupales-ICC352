@@ -4,17 +4,20 @@ import io.javalin.http.Context;
 import main.models.Evento;
 import main.models.Inscripcion;
 import main.models.Usuario;
+import main.services.AsistenciaService;
 import main.services.EventoService;
 import main.services.InscripcionService;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class InscripcionController {
 
     public static void inscribirse(Context ctx) {
-
         Usuario usuario = ctx.sessionAttribute("usuario");
 
         if (usuario == null) {
@@ -23,114 +26,112 @@ public class InscripcionController {
             return;
         }
 
-        Long eventoId = Long.parseLong(ctx.formParam("eventoId"));
-
+        Long eventoId = Long.parseLong(ctx.pathParam("id"));
         Evento evento = EventoService.getInstancia().find(eventoId);
 
-        if (evento == null) {
+        if (evento == null || evento.isCancelado() || !evento.isPublicado()) {
             ctx.status(404);
             ctx.result("Evento no encontrado");
             return;
         }
 
-        // validar duplicados
-        boolean existe = InscripcionService.getInstancia()
-                .existeInscripcion(usuario.getId(), eventoId);
-
-        if (existe) {
+        if (InscripcionService.getInstancia().existeInscripcion(usuario.getId(), eventoId)) {
             ctx.status(400);
             ctx.result("Ya estás inscrito en este evento");
             return;
         }
 
-        // validar cupo
-        long inscritos = InscripcionService.getInstancia()
-                .contarPorEvento(eventoId);
-
-        if (inscritos >= evento.getCupoMaximo()) {
+        if (InscripcionService.getInstancia().contarPorEvento(eventoId) >= evento.getCupoMaximo()) {
             ctx.status(400);
             ctx.result("El evento está lleno");
             return;
         }
 
-        // generar token QR
-        String qrToken = UUID.randomUUID().toString();
-
         Inscripcion inscripcion = new Inscripcion(
                 LocalDate.now(),
                 LocalTime.now(),
-                qrToken,
+                UUID.randomUUID().toString(),
                 usuario,
                 evento
         );
 
         InscripcionService.getInstancia().crear(inscripcion);
 
-        ctx.result("Inscripción realizada correctamente");
+        long inscritos   = InscripcionService.getInstancia().contarPorEvento(eventoId);
+        long disponibles = evento.getCupoMaximo() - inscritos;
+        long porcentaje  = (inscritos * 100) / evento.getCupoMaximo();
+
+        ctx.status(200);
+        ctx.json(Map.of(
+                "qrToken",     inscripcion.getQrToken(),
+                "inscritos",   inscritos,
+                "disponibles", disponibles,
+                "porcentaje",  porcentaje
+        ));
     }
 
 
     public static void cancelarInscripcion(Context ctx) {
-
         Usuario usuario = ctx.sessionAttribute("usuario");
 
         if (usuario == null) {
-            ctx.status(401);
-            ctx.result("Debe iniciar sesión");
+            ctx.redirect("/login");
             return;
         }
 
         Long inscripcionId = Long.parseLong(ctx.pathParam("id"));
-
-        Inscripcion inscripcion = InscripcionService
-                .getInstancia()
-                .find(inscripcionId);
+        Inscripcion inscripcion = InscripcionService.getInstancia().find(inscripcionId);
 
         if (inscripcion == null) {
-            ctx.status(404);
-            ctx.result("Inscripción no encontrada");
+            ctx.sessionAttribute("error", "Inscripción no encontrada.");
+            ctx.redirect("/mis-inscripciones");
             return;
         }
 
         if (!inscripcion.getUsuario().getId().equals(usuario.getId())) {
-            ctx.status(403);
-            ctx.result("No autorizado");
+            ctx.sessionAttribute("error", "No estás autorizado para cancelar esta inscripción.");
+            ctx.redirect("/mis-inscripciones");
+            return;
+        }
+
+        if (!inscripcion.getEvento().getFecha().isAfter(LocalDate.now())) {
+            ctx.sessionAttribute("error", "Solo puedes cancelar hasta el día anterior al evento.");
+            ctx.redirect("/mis-inscripciones");
             return;
         }
 
         InscripcionService.getInstancia().eliminar(inscripcionId);
-
-        ctx.result("Inscripción cancelada");
+        ctx.sessionAttribute("exito", "Inscripción cancelada correctamente.");
+        ctx.redirect("/mis-inscripciones");
     }
 
+    public static void misInscripciones(Context ctx) {
+        Usuario usuario = ctx.sessionAttribute("usuario");
 
-    public static void marcarAsistencia(Context ctx) {
-
-        String token = ctx.formParam("token");
-
-        Inscripcion inscripcion = InscripcionService
-                .getInstancia()
-                .findAll()
-                .stream()
-                .filter(i -> i.getQrToken().equals(token))
-                .findFirst()
-                .orElse(null);
-
-        if (inscripcion == null) {
-            ctx.status(404);
-            ctx.result("QR inválido");
+        if (usuario == null) {
+            ctx.redirect("/login");
             return;
         }
 
-        if (inscripcion.isAsistio()) {
-            ctx.result("La asistencia ya fue registrada");
-            return;
+        String error = ctx.sessionAttribute("error");
+        String exito = ctx.sessionAttribute("exito");
+        ctx.sessionAttribute("error", null);
+        ctx.sessionAttribute("exito", null);
+
+        List<Inscripcion> inscripciones = InscripcionService.getInstancia()
+                .findPorUsuario(usuario.getId());
+
+        Map<Long, Boolean> asistencias = new HashMap<>();
+        for (Inscripcion i : inscripciones) {
+            asistencias.put(i.getId(), AsistenciaService.getInstancia().yaAsistio(i.getId()));
         }
 
-        inscripcion.setAsistio(true);
+        Map<String, Object> modelo = new HashMap<>();
+        modelo.put("inscripciones", inscripciones);
+        modelo.put("asistencias", asistencias);
+        modelo.put("error", error);
+        modelo.put("exito", exito);
 
-        InscripcionService.getInstancia().crear(inscripcion);
-
-        ctx.result("Asistencia registrada");
+        ctx.render("templates/inscripciones/misInscripciones.html", modelo);
     }
 }

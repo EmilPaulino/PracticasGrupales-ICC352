@@ -80,7 +80,7 @@
                         <a th:if="${evento.cupoMaximo - inscritos[evento.id] > 0}"
                            th:href="@{/eventos/ver/{id}(id=${evento.id})}"
                            class="btn btn-inscribirse w-100">
-                            Ver e inscribirse
+                            Ver detalle
                         </a>
                         <button th:unless="${evento.cupoMaximo - inscritos[evento.id] > 0}"
                                 class="btn btn-lleno w-100" disabled>

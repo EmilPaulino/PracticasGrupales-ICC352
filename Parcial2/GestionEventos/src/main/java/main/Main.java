@@ -4,7 +4,9 @@ import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.rendering.template.JavalinThymeleaf;
 
+import main.controllers.AsistenciaController;
 import main.controllers.EventoController;
+import main.controllers.InscripcionController;
 import main.controllers.UsuarioController;
 
 import main.models.Usuario;
@@ -102,6 +104,15 @@ public class Main {
             config.routes.get("/eventos/ver/{id}", EventoController::visualizarPublico);
             config.routes.get("/eventos/inscripciones-por-dia/{id}", EventoController::inscripcionesPorDia);
             config.routes.get("/eventos/asistencia-por-hora/{id}", EventoController::asistenciaPorHora);
+
+            //Rutas para Inscripciones
+            config.routes.post("/eventos/inscribirse/{id}", InscripcionController::inscribirse);
+            config.routes.get("/mis-inscripciones", InscripcionController::misInscripciones);
+            config.routes.post("/inscripciones/cancelar/{id}", InscripcionController::cancelarInscripcion);
+
+            //Rutas para Asistencia
+            config.routes.get("/asistencia", AsistenciaController::vistaEscaner);
+            config.routes.post("/asistencia/marcar", AsistenciaController::marcarAsistencia);
 
             //Protección de rutas de eventos
             config.routes.before("/eventos/*", ctx -> {

@@ -10,15 +10,12 @@
 </head>
 <body>
 
-<!-- NAVBAR (siempre visible, incluye logo + usuario desktop + hamburguesa móvil) -->
 <div th:replace="~{templates/fragments/layout.html :: navbar-top}"></div>
 
 <div class="d-flex">
 
-    <!-- SIDEBAR (fijo, empieza debajo del navbar) -->
     <div th:replace="~{templates/fragments/layout.html :: sidebar}"></div>
 
-    <!-- CONTENIDO PRINCIPAL (margen izquierdo para compensar el sidebar fijo) -->
     <main class="flex-fill p-4" style="margin-left: 260px; margin-top: 56px;">
 
         <h1>Dashboard</h1>

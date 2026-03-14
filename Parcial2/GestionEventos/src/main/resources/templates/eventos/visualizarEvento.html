@@ -99,13 +99,13 @@
                         <div class="row g-2 mb-3">
                             <div class="col-6">
                                 <div class="cupo-stat">
-                                    <div class="number" th:text="${inscritos}">0</div>
+                                    <div class="number" id="statInscritos" th:text="${inscritos}">0</div>
                                     <div class="label">Inscritos</div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="cupo-stat">
-                                    <div class="number"
+                                    <div class="number" id="statDisponibles"
                                          th:classappend="${evento.cupoMaximo - inscritos <= 0} ? 'bad' : 'ok'"
                                          th:text="${evento.cupoMaximo - inscritos}">0</div>
                                     <div class="label">Disponibles</div>
@@ -117,10 +117,10 @@
                         <div class="mb-3">
                             <div class="d-flex justify-content-between mb-1" style="font-size:0.78rem; color:#94a3b8;">
                                 <span>Ocupación</span>
-                                <span th:text="${inscritos} + ' / ' + ${evento.cupoMaximo}"></span>
+                                <span id="statOcupacion" th:text="${inscritos} + ' / ' + ${evento.cupoMaximo}"></span>
                             </div>
                             <div class="progress" style="height:6px; border-radius:999px; background:#f1f5f9;">
-                                <div class="progress-bar"
+                                <div class="progress-bar" id="barraOcupacion"
                                      role="progressbar"
                                      th:style="'width: ' + ${inscritos > 0 ? (inscritos * 100) / evento.cupoMaximo : 0} + '%'"
                                      th:classappend="${inscritos >= evento.cupoMaximo} ? 'bg-danger' : 'bg-success'"
@@ -145,20 +145,34 @@
                             <i class="bi bi-box-arrow-in-right me-2"></i>Inicia sesión para inscribirte
                         </a>
 
-                        <!-- Ya inscrito -->
-                        <button th:if="${session.usuario != null and yaInscrito and !evento.cancelado}"
-                                class="btn btn-success w-100 disabled"
-                                style="border-radius:8px; font-weight:600; font-size:0.875rem;">
-                            <i class="bi bi-check-circle-fill me-2"></i>Ya estás inscrito
-                        </button>
+                        <!-- Ya inscrito: muestra QR -->
+                        <div th:if="${session.usuario != null and yaInscrito and !evento.cancelado}">
+                            <button class="btn btn-success w-100 disabled mb-3"
+                                    style="border-radius:8px; font-weight:600; font-size:0.875rem;">
+                                <i class="bi bi-check-circle-fill me-2"></i>Ya estás inscrito
+                            </button>
+                            <div class="text-center">
+                                <p style="font-size:0.78rem; color:#94a3b8; margin-bottom:0.75rem;">Tu código QR de acceso</p>
+                                <div id="qrcode" class="d-flex justify-content-center"></div>
+                                <p class="mt-2" style="font-size:0.7rem; color:#cbd5e1;"
+                                   th:text="${qrToken}"></p>
+                            </div>
+                        </div>
 
-                        <!-- Inscribirse -->
-                        <form th:if="${session.usuario != null and !yaInscrito and !evento.cancelado and inscritos < evento.cupoMaximo}"
-                              th:action="@{/eventos/inscribirse/{id}(id=${evento.id})}" method="post">
-                            <button type="submit" class="btn-inscribirse">
+                        <!-- Inscribirse con fetch -->
+                        <div th:if="${session.usuario != null and !yaInscrito and !evento.cancelado and inscritos < evento.cupoMaximo}">
+                            <button id="btnInscribirse"
+                                    class="btn-inscribirse"
+                                    th:data-evento-id="${evento.id}"
+                                    th:data-cupo-maximo="${evento.cupoMaximo}">
                                 <i class="bi bi-lightning-charge me-2"></i>Inscribirme ahora
                             </button>
-                        </form>
+                            <div id="mensajeInscripcion" class="mt-2" style="display:none; font-size:0.85rem;"></div>
+                            <div id="qrContainer" class="text-center mt-3" style="display:none;">
+                                <p style="font-size:0.78rem; color:#94a3b8; margin-bottom:0.75rem;">Tu código QR de acceso</p>
+                                <div id="qrcodeDinamico" class="d-flex justify-content-center"></div>
+                            </div>
+                        </div>
 
                         <!-- Cupos agotados -->
                         <button th:if="${!evento.cancelado and inscritos >= evento.cupoMaximo and !yaInscrito}"
@@ -175,6 +189,82 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script th:src="@{/js/sidebar.js}"></script>
+
+<script th:inline="javascript">
+    // QR estático para usuario ya inscrito
+    const qrTokenExistente = /*[[${qrToken}]]*/ null;
+    if (qrTokenExistente && document.getElementById('qrcode')) {
+        new QRCode(document.getElementById('qrcode'), {
+            text: qrTokenExistente,
+            width: 160,
+            height: 160
+        });
+    }
+
+    // Fetch para inscribirse
+    const btn = document.getElementById('btnInscribirse');
+    if (btn) {
+        btn.addEventListener('click', function () {
+            const eventoId   = btn.getAttribute('data-evento-id');
+            const cupoMaximo = parseInt(btn.getAttribute('data-cupo-maximo'));
+            const mensaje    = document.getElementById('mensajeInscripcion');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando...';
+
+            fetch(`/eventos/inscribirse/${eventoId}`, { method: 'POST' })
+                .then(res => {
+                    if (!res.ok) return res.text().then(t => { throw new Error(t); });
+                    return res.json();
+                })
+                .then(data => {
+                    // Cambiar botón
+                    btn.className = 'btn btn-success w-100 disabled';
+                    btn.style.cssText = 'border-radius:8px; font-weight:600; font-size:0.875rem;';
+                    btn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>¡Ya estás inscrito!';
+
+                    // Mensaje
+                    mensaje.style.display = 'block';
+                    mensaje.className = 'mt-2 text-success';
+                    mensaje.innerHTML = '<i class="bi bi-check-circle me-1"></i>Inscripción realizada con éxito.';
+
+                    // Actualizar stats
+                    document.getElementById('statInscritos').textContent = data.inscritos;
+
+                    const disponiblesEl = document.getElementById('statDisponibles');
+                    disponiblesEl.textContent = data.disponibles;
+                    disponiblesEl.classList.remove('ok', 'bad');
+                    disponiblesEl.classList.add(data.disponibles <= 0 ? 'bad' : 'ok');
+
+                    document.getElementById('statOcupacion').textContent = data.inscritos + ' / ' + cupoMaximo;
+
+                    const barra = document.getElementById('barraOcupacion');
+                    barra.style.width = data.porcentaje + '%';
+                    if (data.disponibles <= 0) {
+                        barra.classList.remove('bg-success');
+                        barra.classList.add('bg-danger');
+                    }
+
+                    // Mostrar QR
+                    const qrContainer = document.getElementById('qrContainer');
+                    qrContainer.style.display = 'block';
+                    new QRCode(document.getElementById('qrcodeDinamico'), {
+                        text: data.qrToken,
+                        width: 160,
+                        height: 160
+                    });
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-lightning-charge me-2"></i>Inscribirme ahora';
+                    mensaje.style.display = 'block';
+                    mensaje.className = 'mt-2 text-danger';
+                    mensaje.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>${err.message}`;
+                });
+        });
+    }
+</script>
 </body>
 </html>

@@ -18,8 +18,6 @@ public class Inscripcion {
 
     private String qrToken;
 
-    private boolean asistio; // Para confirmar asistencia
-
     @ManyToOne
     private Usuario usuario;
 
@@ -36,7 +34,6 @@ public class Inscripcion {
         this.qrToken = qrToken;
         this.usuario = usuario;
         this.evento = evento;
-        this.asistio = false; // nadie ha asistido cuando se inscribe
     }
 
     public Long getId() {
@@ -69,14 +66,6 @@ public class Inscripcion {
 
     public void setQrToken(String qrToken) {
         this.qrToken = qrToken;
-    }
-
-    public boolean isAsistio() {
-        return asistio;
-    }
-
-    public void setAsistio(boolean asistio) {
-        this.asistio = asistio;
     }
 
     public Usuario getUsuario() {

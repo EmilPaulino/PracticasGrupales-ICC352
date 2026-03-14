@@ -215,25 +215,38 @@ public class EventoController {
         Evento evento = EventoService.getInstancia().find(id);
 
         if (evento == null || !evento.isPublicado()) {
-            ctx.redirect("/eventos/publicos");
+            ctx.redirect("/");
             return;
         }
 
         long inscritos = InscripcionService.getInstancia().contarPorEvento(id);
 
         boolean yaInscrito = false;
-        Usuario usuario = (Usuario) ctx.sessionAttribute("usuario");
+        String qrToken = null;
+        Usuario usuario = ctx.sessionAttribute("usuario");
 
         if (usuario != null) {
-            yaInscrito = InscripcionService.getInstancia().existeInscripcion(id, usuario.getId());
+            yaInscrito = InscripcionService.getInstancia()
+                    .existeInscripcion(usuario.getId(), id);
+
+            if (yaInscrito) {
+                qrToken = InscripcionService.getInstancia()
+                        .findPorEvento(id).stream()
+                        .filter(i -> i.getUsuario().getId().equals(usuario.getId()))
+                        .findFirst()
+                        .map(Inscripcion::getQrToken)
+                        .orElse(null);
+            }
         }
 
         Map<String, Object> modelo = new HashMap<>();
         modelo.put("evento", evento);
         modelo.put("inscritos", inscritos);
         modelo.put("yaInscrito", yaInscrito);
+        modelo.put("qrToken", qrToken);
 
         ctx.render("templates/eventos/visualizarEvento.html", modelo);
+
     }
 
 }

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Inscripciones</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/misInscripciones.css}">
+
+</head>
+<body>
+
+<div th:replace="~{templates/fragments/layout.html :: navbar-top-public}"></div>
+<div th:replace="~{templates/fragments/layout.html :: offcanvas-public}"></div>
+
+<!-- Header -->
+<div class="page-header">
+    <div class="container">
+        <h1><i class="bi bi-ticket-perforated me-2 text-primary"></i>Mis Inscripciones</h1>
+        <p>Gestiona tus inscripciones a eventos académicos</p>
+    </div>
+</div>
+
+<div class="section">
+    <div class="container">
+
+        <!-- Alertas -->
+        <div th:if="${error != null}" class="alert alert-danger d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span th:text="${error}"></span>
+        </div>
+        <div th:if="${exito != null}" class="alert alert-success d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-check-circle-fill"></i>
+            <span th:text="${exito}"></span>
+        </div>
+
+        <!-- Empty state -->
+        <div th:if="${#lists.isEmpty(inscripciones)}" class="empty-state">
+            <i class="bi bi-ticket-perforated"></i>
+            <p class="mb-1">No tienes inscripciones aún.</p>
+            <small>Explora los eventos disponibles y regístrate.</small>
+            <div class="mt-3">
+                <a href="/" class="btn btn-primary btn-sm">Ver eventos</a>
+            </div>
+        </div>
+
+        <!-- Grid -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3" th:unless="${#lists.isEmpty(inscripciones)}">
+            <div class="col" th:each="inscripcion : ${inscripciones}">
+                <!-- cancelable = antes del día del evento -->
+                <div class="inscripcion-card"
+                     th:with="pasado=${inscripcion.evento.fecha.isBefore(#temporals.createToday())},
+                               cancelable=${inscripcion.evento.fecha.isAfter(#temporals.createToday())}">
+
+                    <div class="card-top"
+                         th:classappend="${inscripcion.evento.cancelado} ? 'cancelado' : (${pasado} ? 'pasado' : '')">
+                    </div>
+
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="evento-titulo" th:text="${inscripcion.evento.titulo}"></div>
+                            <span th:if="${inscripcion.evento.cancelado}"
+                                  class="estado-badge bg-danger-subtle text-danger">Cancelado</span>
+                            <span th:if="${!inscripcion.evento.cancelado and pasado and asistencias[inscripcion.id]}"
+                                  class="estado-badge bg-success-subtle text-success">Asistí</span>
+                            <span th:if="${!inscripcion.evento.cancelado and pasado and !asistencias[inscripcion.id]}"
+                                  class="estado-badge bg-secondary-subtle text-secondary">No asistí</span>
+                            <span th:if="${!inscripcion.evento.cancelado and !pasado}"
+                                  class="estado-badge bg-primary-subtle text-primary">Próximo</span>
+                        </div>
+
+                        <div class="info-item">
+                            <i class="bi bi-calendar3"></i>
+                            <span th:text="${#temporals.format(inscripcion.evento.fecha, 'dd MMM yyyy')}"></span>
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-clock"></i>
+                            <span th:text="${#temporals.format(inscripcion.evento.hora, 'hh:mm a')}"></span>
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-geo-alt"></i>
+                            <span th:text="${inscripcion.evento.lugar}"></span>
+                        </div>
+                        <div class="info-item mt-2">
+                            <i class="bi bi-calendar-check"></i>
+                            <span>Inscrito el
+                                <span th:text="${#temporals.format(inscripcion.fecha, 'dd MMM yyyy')}"></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="card-footer-custom">
+                        <div class="d-flex gap-2">
+                            <a th:href="@{/eventos/ver/{id}(id=${inscripcion.evento.id})}"
+                               class="btn-ver">
+                                <i class="bi bi-eye me-1"></i>Ver evento
+                            </a>
+                            <!-- Cancelar solo si es antes del día del evento -->
+                            <button th:if="${cancelable and !inscripcion.evento.cancelado}"
+                                    type="button"
+                                    class="btn-cancelar"
+                                    th:data-id="${inscripcion.id}"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalCancelar"
+                                    onclick="prepararCancelacion(this)">
+                                <i class="bi bi-x-circle me-1"></i>Cancelar
+                            </button>
+                        </div>
+
+                        <button th:if="${!inscripcion.evento.cancelado}"
+                                class="qr-toggle"
+                                th:data-id="${inscripcion.id}"
+                                th:data-token="${inscripcion.qrToken}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalQr"
+                                onclick="abrirQr(this)">
+                            <i class="bi bi-qr-code"></i> Ver QR
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Cancelar -->
+<div class="modal fade" id="modalCancelar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar cancelación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro que deseas cancelar esta inscripción?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
+                <form id="formCancelar" method="post">
+                    <button type="submit" class="btn btn-danger">Cancelar inscripción</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal QR -->
+<div class="modal fade" id="modalQr" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-qr-code me-2"></i>Tu código QR</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <p class="text-muted small mb-3">Presenta este código el día del evento para registrar tu asistencia.</p>
+                <div id="qrModalContainer" class="d-flex justify-content-center"></div>
+                <small id="qrTokenText" class="text-muted d-block mt-3"
+                       style="font-size:0.68rem; word-break:break-all;"></small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script th:src="@{/js/sidebar.js}"></script>
+<script>
+    // Prepara el form del modal con el id correcto
+    function prepararCancelacion(btn) {
+        const id = btn.getAttribute('data-id');
+        document.getElementById('formCancelar').action = `/inscripciones/cancelar/${id}`;
+    }
+
+    // QR en modal
+    let qrGenerado = false;
+    let ultimoToken = null;
+
+    function abrirQr(btn) {
+        const token = btn.getAttribute('data-token');
+        const container = document.getElementById('qrModalContainer');
+        document.getElementById('qrTokenText').textContent = token;
+
+        if (token !== ultimoToken) {
+            container.innerHTML = '';
+            qrGenerado = false;
+            ultimoToken = token;
+        }
+
+        if (!qrGenerado) {
+            new QRCode(container, {
+                text: token,
+                width: 180,
+                height: 180
+            });
+            qrGenerado = true;
+        }
+    }
+
+    // Limpiar QR al cerrar modal
+    document.getElementById('modalQr').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('qrModalContainer').innerHTML = '';
+        qrGenerado = false;
+        ultimoToken = null;
+    });
+</script>
+</body>
+</html>

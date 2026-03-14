@@ -25,7 +25,9 @@
         <div class="card">
             <div class="card-body">
 
-                <form method="post" th:action="${usuario != null} ? '/usuarios/editar/' + ${usuario.id} : '/usuarios/crear'" enctype="multipart/form-data">
+                <form method="post"
+                      enctype="multipart/form-data"
+                      th:action="${usuario != null} ? '/usuarios/editar/' + ${usuario.id} : '/usuarios/crear'">
 
                     <div class="mb-3">
                         <label class="form-label">Foto de Perfil</label>
