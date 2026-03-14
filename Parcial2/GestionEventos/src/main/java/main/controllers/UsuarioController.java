@@ -81,7 +81,7 @@ public class UsuarioController {
     public static void formNuevo(Context ctx) {
         Map<String, Object> model = new HashMap<>();
         model.put("roles", RolService.getInstancia().findAll());
-        model.put("usuario", null);   // ← ESTA ES LA SOLUCIÓN
+        model.put("usuario", null);
         ctx.render("templates/usuarios/formularioUsuarios.html", model);
     }
 
