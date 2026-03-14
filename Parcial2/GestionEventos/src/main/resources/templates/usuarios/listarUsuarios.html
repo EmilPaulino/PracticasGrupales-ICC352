@@ -27,6 +27,10 @@
                 <div th:if="${errorEliminarAdmin}" class="alert alert-danger text-center mb-3">
                     No se puede eliminar el usuario administrador.
                 </div>
+                <div th:if="${errorEliminarUsuario}" class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    No se puede eliminar este usuario porque tiene inscripciones o registros asociados, bloquee el usuario.
+                </div>
 
                 <div class="d-flex justify-content-end mb-3">
                     <a th:href="@{/usuarios/nuevo}" class="btn btn-outline-success">

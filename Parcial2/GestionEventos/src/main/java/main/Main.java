@@ -15,8 +15,10 @@ import main.services.BootStrapServices;
 import main.services.UsuarioService;
 
 import main.util.EncryptUtil;
+import main.util.Filters;
 
 public class Main {
+
 
     public static void main(String[] args){
 
@@ -114,24 +116,31 @@ public class Main {
             config.routes.get("/asistencia", AsistenciaController::vistaEscaner);
             config.routes.post("/asistencia/marcar", AsistenciaController::marcarAsistencia);
 
+            //Protección de ruta de usuarios
+            config.routes.before("/usuarios/*", Filters::soloAdmin);
+            config.routes.before("/usuarios", Filters::soloAdmin);
+
             //Protección de rutas de eventos
-            config.routes.before("/eventos/*", ctx -> {
+            config.routes.before("/eventos", Filters::organizadorOAdmin);
+            config.routes.before("/eventos/nuevo", Filters::organizadorOAdmin);
+            config.routes.before("/eventos/crear", Filters::organizadorOAdmin);
+            config.routes.before("/eventos/editar/*", Filters::organizadorOAdmin);
+            config.routes.before("/eventos/cancelar/*", Filters::organizadorOAdmin);
+            config.routes.before("/eventos/publicar/*", Filters::organizadorOAdmin);
+            config.routes.before("/eventos/despublicar/*", Filters::organizadorOAdmin);
+            config.routes.before("/eventos/eliminar/*", Filters::organizadorOAdmin);
 
-                Usuario usuario = ctx.sessionAttribute("usuario");
+            //Proteccion de rutas de asistencia
+            config.routes.before("/asistencia", Filters::organizadorOAdmin);
+            config.routes.before("/asistencia/*", Filters::organizadorOAdmin);
 
-                if (usuario == null) {
-                    ctx.redirect("/login");
-                    return;
-                }
+            //Protección de rutas de inscripciones
+            config.routes.before("/mis-inscripciones", Filters::usuarioLogueado);
+            config.routes.before("/inscripciones/*", Filters::usuarioLogueado);
+            config.routes.before("/eventos/inscribirse/*", Filters::usuarioLogueado);
 
-                if (!usuario.getRol().getRol().equals("Organizador") &&
-                        !usuario.getRol().getRol().equals("Admin")) {
-
-                    ctx.status(403);
-                    ctx.result("No autorizado");
-                }
-
-            });
+            //Protección de ruta de panel
+            config.routes.before("/panel", Filters::organizadorOAdmin);
 
         });
 

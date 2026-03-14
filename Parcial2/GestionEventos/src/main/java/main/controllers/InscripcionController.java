@@ -1,6 +1,7 @@
 package main.controllers;
 
 import io.javalin.http.Context;
+import main.models.Asistencia;
 import main.models.Evento;
 import main.models.Inscripcion;
 import main.models.Usuario;
@@ -10,10 +11,7 @@ import main.services.InscripcionService;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class InscripcionController {
 
@@ -106,6 +104,7 @@ public class InscripcionController {
     }
 
     public static void misInscripciones(Context ctx) {
+
         Usuario usuario = ctx.sessionAttribute("usuario");
 
         if (usuario == null) {
@@ -121,14 +120,29 @@ public class InscripcionController {
         List<Inscripcion> inscripciones = InscripcionService.getInstancia()
                 .findPorUsuario(usuario.getId());
 
-        Map<Long, Boolean> asistencias = new HashMap<>();
-        for (Inscripcion i : inscripciones) {
-            asistencias.put(i.getId(), AsistenciaService.getInstancia().yaAsistio(i.getId()));
+        List<Asistencia> asistencias = AsistenciaService.getInstancia().findAll();
+
+        // Lista nueva donde guardaremos solo las inscripciones sin asistencia
+        List<Inscripcion> resultado = new ArrayList<>();
+
+        for (Inscripcion inscripcion : inscripciones) {
+
+            boolean asistio = false;
+
+            for (Asistencia asistencia : asistencias) {
+                if (asistencia.getInscripcion().getId().equals(inscripcion.getId())) {
+                    asistio = true;
+                    break;
+                }
+            }
+
+            if (!asistio) {
+                resultado.add(inscripcion);
+            }
         }
 
         Map<String, Object> modelo = new HashMap<>();
-        modelo.put("inscripciones", inscripciones);
-        modelo.put("asistencias", asistencias);
+        modelo.put("inscripciones", resultado);
         modelo.put("error", error);
         modelo.put("exito", exito);
 

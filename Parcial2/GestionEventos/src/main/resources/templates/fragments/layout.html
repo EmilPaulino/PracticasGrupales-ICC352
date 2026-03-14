@@ -5,10 +5,10 @@
 <!-- ===== NAVBAR PANEL ===== -->
 <nav th:fragment="navbar-top"
      class="navbar navbar-dark bg-dark px-3 px-lg-4"
-     style="height: 56px;">
+     style="height:56px;">
 
     <a th:href="@{/}" class="d-flex align-items-center text-white text-decoration-none">
-        <img th:src="@{/img/logo.png}" alt="PUCMM" width="40" height="40" class="me-2">
+        <img th:src="@{/img/logo.png}" width="40" height="40" class="me-2">
         <span class="fs-5 fw-semibold">Eventos</span>
     </a>
 
@@ -25,16 +25,16 @@
     </div>
 
     <div class="dropdown ms-auto d-none d-lg-block" th:if="${session.usuario != null}">
-        <a href="#"
-           class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
+
+        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
            data-bs-toggle="dropdown">
 
-            <img th:if="${session.usuario != null and !#strings.isEmpty(session.usuario.fotoBase64)}"
+            <img th:if="${!#strings.isEmpty(session.usuario.fotoBase64)}"
                  th:src="'data:image/jpeg;base64,' + ${session.usuario.fotoBase64}"
                  width="32" height="32"
                  class="rounded-circle me-2">
 
-            <img th:unless="${session.usuario != null and !#strings.isEmpty(session.usuario.fotoBase64)}"
+            <img th:unless="${!#strings.isEmpty(session.usuario.fotoBase64)}"
                  th:src="@{/img/sinFoto.png}"
                  width="32" height="32"
                  class="rounded-circle me-2">
@@ -60,11 +60,12 @@
 
             <li>
                 <a class="dropdown-item" th:href="@{/logout}">
-                    Cerrar Sesión
+                    Cerrar sesión
                 </a>
             </li>
 
         </ul>
+
     </div>
 
 </nav>
@@ -73,10 +74,10 @@
 <!-- ===== NAVBAR PUBLICO ===== -->
 <nav th:fragment="navbar-top-public"
      class="navbar navbar-dark bg-dark px-3 px-lg-4"
-     style="height: 56px;">
+     style="height:56px;">
 
     <a th:href="@{/}" class="d-flex align-items-center text-white text-decoration-none">
-        <img th:src="@{/img/logo.png}" alt="PUCMM" width="40" height="40" class="me-2">
+        <img th:src="@{/img/logo.png}" width="40" height="40" class="me-2">
         <span class="fs-5 fw-semibold">Eventos</span>
     </a>
 
@@ -88,26 +89,21 @@
     </button>
 
     <div class="ms-auto d-none d-lg-flex gap-2" th:if="${session.usuario == null}">
-        <a th:href="@{/login}" class="btn btn-outline-light btn-sm">
-            Iniciar sesión
-        </a>
-
-        <a th:href="@{/registrarse}" class="btn btn-primary btn-sm">
-            Registrarse
-        </a>
+        <a th:href="@{/login}" class="btn btn-outline-light btn-sm">Iniciar sesión</a>
+        <a th:href="@{/registrarse}" class="btn btn-primary btn-sm">Registrarse</a>
     </div>
 
     <div class="dropdown ms-auto d-none d-lg-block" th:if="${session.usuario != null}">
-        <a href="#"
-           class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
+
+        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
            data-bs-toggle="dropdown">
 
-            <img th:if="${session.usuario != null and !#strings.isEmpty(session.usuario.fotoBase64)}"
+            <img th:if="${!#strings.isEmpty(session.usuario.fotoBase64)}"
                  th:src="'data:image/jpeg;base64,' + ${session.usuario.fotoBase64}"
                  width="32" height="32"
                  class="rounded-circle me-2">
 
-            <img th:unless="${session.usuario != null and !#strings.isEmpty(session.usuario.fotoBase64)}"
+            <img th:unless="${!#strings.isEmpty(session.usuario.fotoBase64)}"
                  th:src="@{/img/sinFoto.png}"
                  width="32" height="32"
                  class="rounded-circle me-2">
@@ -133,22 +129,22 @@
 
             <li>
                 <a class="dropdown-item" th:href="@{/logout}">
-                    Cerrar Sesión
+                    Cerrar sesión
                 </a>
             </li>
 
         </ul>
-    </div>
 
+    </div>
 </nav>
 
 
-<!-- ===== SIDEBAR PANEL ===== -->
+
+<!-- ===== SIDEBAR ADMIN ===== -->
 <div th:fragment="sidebar">
 
-    <!-- ===== OFFCANVAS SIDEBAR PANEL (MOVIL) ===== -->
-    <div th:fragment="offcanvas-sidebar"
-         class="offcanvas offcanvas-start text-bg-dark d-lg-none"
+    <!-- OFFCANVAS MOVIL -->
+    <div class="offcanvas offcanvas-start text-bg-dark d-lg-none"
          tabindex="-1"
          id="sidebarOffcanvas"
          style="width:260px;">
@@ -164,19 +160,19 @@
 
             <ul class="nav nav-pills flex-column mb-auto">
 
-                <li class="nav-item">
+                <li>
                     <a th:href="@{/}" class="nav-link text-white">
                         <i class="bi bi-house me-2"></i>Página Principal
                     </a>
                 </li>
 
-                <li class="nav-item">
+                <li>
                     <a th:href="@{/panel}" class="nav-link text-white">
                         <i class="bi bi-speedometer2 me-2"></i>Panel de Administración
                     </a>
                 </li>
 
-                <li>
+                <li th:if="${session.usuario != null and session.usuario.rol.rol == 'Admin'}">
                     <a th:href="@{/usuarios}" class="nav-link text-white">
                         <i class="bi bi-person-circle me-2"></i>Gestión de Usuarios
                     </a>
@@ -198,6 +194,24 @@
 
             <hr class="border-secondary">
 
+            <div th:if="${session.usuario != null}" class="d-flex align-items-center mb-3">
+
+                <img th:if="${!#strings.isEmpty(session.usuario.fotoBase64)}"
+                     th:src="'data:image/jpeg;base64,' + ${session.usuario.fotoBase64}"
+                     width="36"
+                     height="36"
+                     class="rounded-circle me-2">
+
+                <img th:unless="${!#strings.isEmpty(session.usuario.fotoBase64)}"
+                     th:src="@{/img/sinFoto.png}"
+                     width="36"
+                     height="36"
+                     class="rounded-circle me-2">
+
+                <strong th:text="${session.usuario.nombre}"></strong>
+
+            </div>
+
             <a th:href="@{/logout}" class="btn btn-outline-danger w-100">
                 Cerrar sesión
             </a>
@@ -205,24 +219,27 @@
         </div>
     </div>
 
+
+
+    <!-- SIDEBAR DESKTOP -->
     <div class="d-none d-lg-flex flex-column flex-shrink-0 p-3 text-bg-dark"
          style="width:260px;height:calc(100vh - 56px);position:fixed;top:56px;left:0;overflow-y:auto;">
 
         <ul class="nav nav-pills flex-column mb-auto">
 
-            <li class="nav-item">
+            <li>
                 <a th:href="@{/}" class="nav-link text-white">
                     <i class="bi bi-house me-2"></i>Página Principal
                 </a>
             </li>
 
-            <li class="nav-item">
+            <li>
                 <a th:href="@{/panel}" class="nav-link text-white">
                     <i class="bi bi-speedometer2 me-2"></i>Panel de Administración
                 </a>
             </li>
 
-            <li>
+            <li th:if="${session.usuario != null and session.usuario.rol.rol == 'Admin'}">
                 <a th:href="@{/usuarios}" class="nav-link text-white">
                     <i class="bi bi-person-circle me-2"></i>Gestión de Usuarios
                 </a>
@@ -244,38 +261,35 @@
 
         <hr>
 
-        <div class="dropdown">
+        <div th:if="${session.usuario != null}" class="d-flex align-items-center mb-3">
 
-            <a href="#"
-               class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
-               data-bs-toggle="dropdown">
+            <img th:if="${!#strings.isEmpty(session.usuario.fotoBase64)}"
+                 th:src="'data:image/jpeg;base64,' + ${session.usuario.fotoBase64}"
+                 width="36"
+                 height="36"
+                 class="rounded-circle me-2">
 
-                <img th:if="${session.usuario != null and !#strings.isEmpty(session.usuario.fotoBase64)}"
-                     th:src="'data:image/jpeg;base64,' + ${session.usuario.fotoBase64}"
-                     width="32" height="32"
-                     class="rounded-circle me-2">
+            <img th:unless="${!#strings.isEmpty(session.usuario.fotoBase64)}"
+                 th:src="@{/img/sinFoto.png}"
+                 width="36"
+                 height="36"
+                 class="rounded-circle me-2">
 
-                <img th:unless="${session.usuario != null and !#strings.isEmpty(session.usuario.fotoBase64)}"
-                     th:src="@{/img/sinFoto.png}"
-                     width="32" height="32"
-                     class="rounded-circle me-2">
-
-                <strong th:text="${session.usuario != null ? session.usuario.nombre : 'Usuario'}"></strong>
-
-            </a>
-
-            <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-                <li><a class="dropdown-item" th:href="@{/logout}">Cerrar Sesión</a></li>
-            </ul>
+            <strong th:text="${session.usuario.nombre}"></strong>
 
         </div>
+
+        <a th:href="@{/logout}" class="btn btn-outline-danger w-100">
+            Cerrar sesión
+        </a>
 
     </div>
 
 </div>
 
 
-<!-- ===== OFFCANVAS PUBLICO ===== -->
+
+<!-- ===== SIDEBAR PUBLICO ===== -->
 <div th:fragment="offcanvas-public"
      class="offcanvas offcanvas-start text-bg-dark d-lg-none"
      tabindex="-1"
@@ -291,48 +305,65 @@
 
     <div class="offcanvas-body d-flex flex-column p-3 pt-0">
 
-        <div th:if="${session.usuario == null}" class="d-flex flex-column gap-2">
-            <a th:href="@{/login}" class="btn btn-outline-light">Iniciar sesión</a>
-            <a th:href="@{/registrarse}" class="btn btn-primary">Registrarse</a>
+        <ul class="nav nav-pills flex-column mb-auto">
+
+            <li>
+                <a th:href="@{/}" class="nav-link text-white">
+                    <i class="bi bi-house me-2"></i>Página Principal
+                </a>
+            </li>
+
+            <li th:if="${session.usuario == null}">
+                <a th:href="@{/login}" class="nav-link text-white">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión
+                </a>
+            </li>
+
+            <li th:if="${session.usuario == null}">
+                <a th:href="@{/registrarse}" class="nav-link text-white">
+                    <i class="bi bi-person-plus me-2"></i>Registrarse
+                </a>
+            </li>
+
+            <li th:if="${session.usuario != null and session.usuario.rol.rol == 'Participante'}">
+                <a th:href="@{/mis-inscripciones}" class="nav-link text-white">
+                    <i class="bi bi-ticket-perforated me-2"></i>Mis Inscripciones
+                </a>
+            </li>
+
+            <li th:if="${session.usuario != null and (session.usuario.rol.rol == 'Admin' or session.usuario.rol.rol == 'Organizador')}">
+                <a th:href="@{/panel}" class="nav-link text-white">
+                    <i class="bi bi-speedometer2 me-2"></i>Ir al Panel
+                </a>
+            </li>
+
+        </ul>
+
+        <hr class="border-secondary">
+
+        <div th:if="${session.usuario != null}" class="d-flex align-items-center mb-3">
+
+            <img th:if="${!#strings.isEmpty(session.usuario.fotoBase64)}"
+                 th:src="'data:image/jpeg;base64,' + ${session.usuario.fotoBase64}"
+                 width="36"
+                 height="36"
+                 class="rounded-circle me-2">
+
+            <img th:unless="${!#strings.isEmpty(session.usuario.fotoBase64)}"
+                 th:src="@{/img/sinFoto.png}"
+                 width="36"
+                 height="36"
+                 class="rounded-circle me-2">
+
+            <strong th:text="${session.usuario.nombre}"></strong>
+
         </div>
 
-        <div th:if="${session.usuario != null}">
-
-            <div class="d-flex align-items-center mb-3">
-
-                <img th:if="${!#strings.isEmpty(session.usuario.fotoBase64)}"
-                     th:src="'data:image/jpeg;base64,' + ${session.usuario.fotoBase64}"
-                     width="40" height="40"
-                     class="rounded-circle me-2">
-
-                <img th:unless="${!#strings.isEmpty(session.usuario.fotoBase64)}"
-                     th:src="@{/img/sinFoto.png}"
-                     width="40" height="40"
-                     class="rounded-circle me-2">
-
-                <strong th:text="${session.usuario.nombre}"></strong>
-
-            </div>
-
-            <a th:if="${session.usuario.rol.rol == 'Participante'}"
-               th:href="@{/mis-inscripciones}"
-               class="btn btn-outline-light w-100 mb-2">
-                <i class="bi bi-ticket-perforated me-2"></i>Mis Inscripciones
-            </a>
-
-            <a th:if="${session.usuario.rol.rol == 'Admin' or session.usuario.rol.rol == 'Organizador'}"
-               th:href="@{/panel}"
-               class="btn btn-outline-light w-100 mb-2">
-                <i class="bi bi-speedometer2 me-2"></i>Ir al Panel
-            </a>
-
-            <hr class="border-secondary">
-
-            <a th:href="@{/logout}" class="btn btn-outline-danger w-100">
-                Cerrar sesión
-            </a>
-
-        </div>
+        <a th:if="${session.usuario != null}"
+           th:href="@{/logout}"
+           class="btn btn-outline-danger w-100">
+            Cerrar sesión
+        </a>
 
     </div>
 </div>

@@ -47,6 +47,12 @@ public class EventoController {
         modelo.put("paginaActual", pagina);
         modelo.put("totalPaginas", totalPaginas);
 
+        modelo.put("error", ctx.sessionAttribute("error"));
+        modelo.put("mensaje", ctx.sessionAttribute("mensaje"));
+
+        ctx.sessionAttribute("error", null);
+        ctx.sessionAttribute("mensaje", null);
+
         ctx.render("templates/eventos/listarEventos.html", modelo);
     }
 
@@ -161,8 +167,18 @@ public class EventoController {
     }
 
     public static void eliminar(Context ctx){
+
         Long id = Long.parseLong(ctx.pathParam("id"));
-        EventoService.getInstancia().eliminar(id);
+
+        try {
+
+            EventoService.getInstancia().eliminar(id);
+            ctx.sessionAttribute("mensaje", "Evento eliminado correctamente.");
+
+        } catch (Exception e) {
+            ctx.sessionAttribute("error", "No se puede eliminar este evento porque tiene participantes inscritos, cancele el evento.");
+        }
+
         ctx.redirect("/eventos");
     }
 

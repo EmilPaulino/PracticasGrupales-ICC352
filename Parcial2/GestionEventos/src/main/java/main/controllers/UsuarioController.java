@@ -16,8 +16,10 @@ public class UsuarioController {
     private static UsuarioService usuarioService = UsuarioService.getInstancia();
 
     public static void listar(Context ctx) {
+
         int pagina = 0;
         String paginaParam = ctx.queryParam("pagina");
+
         if (paginaParam != null) {
             try {
                 pagina = Integer.parseInt(paginaParam);
@@ -31,9 +33,13 @@ public class UsuarioController {
         int totalPaginas = (int) Math.ceil((double) total / tamano);
 
         Map<String, Object> modelo = new HashMap<>();
+
         modelo.put("usuarios", UsuarioService.getInstancia().findPaginado(pagina, tamano));
         modelo.put("paginaActual", pagina);
         modelo.put("totalPaginas", totalPaginas);
+
+        modelo.put("errorEliminarAdmin", ctx.attribute("errorEliminarAdmin"));
+        modelo.put("errorEliminarUsuario", ctx.attribute("errorEliminarUsuario"));
 
         ctx.render("templates/usuarios/listarUsuarios.html", modelo);
     }
@@ -123,15 +129,30 @@ public class UsuarioController {
     }
 
     public static void eliminar(Context ctx){
+
         Long id = Long.parseLong(ctx.pathParam("id"));
+
+        // No permitir eliminar admin principal
         if(id == 1){
             ctx.attribute("errorEliminarAdmin", true);
             ctx.attribute("usuarios", UsuarioService.getInstancia().findAll());
             ctx.render("templates/usuarios/listarUsuarios.html");
             return;
         }
-        UsuarioService.getInstancia().eliminar(id);
-        ctx.redirect("/usuarios");
+
+        try {
+
+            UsuarioService.getInstancia().eliminar(id);
+            ctx.redirect("/usuarios");
+
+        } catch (Exception e) {
+
+            // Error cuando el usuario tiene inscripciones o relaciones
+            ctx.attribute("errorEliminarUsuario", true);
+            ctx.attribute("usuarios", UsuarioService.getInstancia().findAll());
+
+            ctx.render("templates/usuarios/listarUsuarios.html");
+        }
     }
 
     public static void loginForm(Context ctx){
