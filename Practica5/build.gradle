@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'edu.pucmm.eict'
+version = '1.0-SNAPSHOT'
+
+application{
+    mainClass = 'edu.pucmm.eict.web.Main'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    //Dependencia de Javalin
+    implementation("io.javalin:javalin:6.7.0")
+    //Manejo de logs
+    implementation "org.slf4j:slf4j-simple:2.0.11"
+    //Motor de plantillas
+    implementation 'org.thymeleaf:thymeleaf:3.1.1.RELEASE'
+    //Renderizado
+    implementation "io.javalin:javalin-rendering:6.7.0"
+    //ORM - Hibernate.
+    implementation 'org.hibernate.orm:hibernate-core:6.0.2.Final'
+    //Base de datos H2
+    implementation 'com.h2database:h2:2.1.214'
+    //Base de datos Postgres
+    implementation 'org.postgresql:postgresql:42.3.8'
+    //Jasypt
+    implementation 'org.jasypt:jasypt:1.9.3'
+}
+
+test {
+    useJUnitPlatform()
+}

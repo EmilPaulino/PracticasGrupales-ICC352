@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content=""/>
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors"/>
+    <meta name="generator" content="Astro v5.13.2"/>
+    <title>Mi Blog</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/estilos/estilosIndex.css" rel="stylesheet"/>
+    <link href="/estilos/estilosNavbar.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+</head>
+
+<body>
+
+<div class="container">
+    <!--Se agrega el navbar desde una plantilla -->
+    <div th:replace="~{/templates/fragmentos/navbar.html :: navbar}"></div>
+</div>
+
+<main class="container mb-3">
+
+    <div class="mt-3 p-4 p-md-5 mb-4 rounded text-body-emphasis bg-body-secondary">
+        <div class="col-lg-6 px-0">
+            <h1 class="display-4 fst-italic">Nuestro Blog Oficial</h1>
+            <p class="lead my-3">
+                En este espacio compartimos información, novedades y contenidos de interés general.
+                Nuestro objetivo es ofrecer artículos claros, útiles y fáciles de entender para todos
+                nuestros lectores.
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <!-- COLUMNA IZQUIERDA (8) -->
+        <div class="col-md-8">
+
+            <!-- MENSAJE SI NO HAY ARTÍCULOS -->
+            <div th:if="${articulos.isEmpty() and etiquetaSeleccionada == null}" class="alert alert-info">
+                No hay artículos publicados todavía.
+            </div>
+
+            <!-- MENSAJE SI LA ETIQUETA NO EXISTE -->
+            <div th:if="${articulos.isEmpty() and etiquetaSeleccionada != null}" class="alert alert-warning">
+                No hay artículos asociados a la etiqueta
+                <strong th:text="${etiquetaSeleccionada}"></strong>.
+            </div>
+
+            <div class="row mb-2" th:each="articulo : ${articulos}">
+                <div class="col-12">
+                    <div class="row g-0 border overflow-hidden flex-md-row mb-4 shadow-sm position-relative">
+                        <div class="col p-4 d-flex flex-column position-static">
+
+                            <!-- ETIQUETAS DEL ARTÍCULO -->
+                            <div class="d-flex flex-wrap gap-1 mb-2">
+                                <span th:each="e, iter : ${articulo.listaEtiquetas}">
+                                    <strong class="text-primary-emphasis"
+                                            th:text="${e.etiqueta}"></strong>
+                                    <span th:if="${!iter.last}">, </span>
+                                </span>
+                            </div>
+
+                            <h3 class="mb-0" th:text="${articulo.titulo}"></h3>
+
+                            <div class="mb-1 text-body-secondary">
+                                Por <strong th:text="${articulo.autor.username}"></strong>
+                                | <span th:text="${articulo.fecha}"></span>
+                            </div>
+
+                            <p class="card-text mb-auto"
+                               th:text="${#strings.length(articulo.cuerpo) > 70} ?
+                               ${#strings.substring(articulo.cuerpo,0,70)} + '...' :
+                               ${articulo.cuerpo}">
+                            </p>
+
+                            <a th:href="@{'/articulos/ver/' + ${articulo.id}}"
+                               class="icon-link gap-1 icon-link-hover stretched-link">
+                                Leer más
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- PAGINACION -->
+            <nav aria-label="Page navigation" th:if="${totalPaginas > 1}">
+                <ul class="pagination justify-content-center">
+
+                    <!-- Anterior -->
+                    <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{${etiquetaSeleccionada != null} ?
+                    '/etiqueta/' + ${etiquetaSeleccionada} + '?page=' + ${page - 1} :
+                    '/?page=' + ${page - 1}}">
+                            Anterior
+                        </a>
+                    </li>
+
+                    <!-- Números -->
+                    <li class="page-item"
+                        th:each="i : ${#numbers.sequence(0, totalPaginas - 1)}"
+                        th:classappend="${i == page} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{${etiquetaSeleccionada != null} ?
+                    '/etiqueta/' + ${etiquetaSeleccionada} + '?page=' + ${i} :
+                    '/?page=' + ${i}}"
+                           th:text="${i + 1}"
+                           th:aria-current="${i == page} ? 'page' : null">
+                        </a>
+                    </li>
+
+                    <!-- Siguiente -->
+                    <li class="page-item"
+                        th:classappend="${page == totalPaginas - 1} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{${etiquetaSeleccionada != null} ?
+                    '/etiqueta/' + ${etiquetaSeleccionada} + '?page=' + ${page + 1} :
+                    '/?page=' + ${page + 1}}">
+                            Siguiente
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+        </div>
+
+        <!-- COLUMNA DERECHA (4) -->
+        <div class="col-md-4">
+            <div class="border p-3">
+
+                <h5 class="fw-bold">Filtrar Por Etiquetas</h5>
+
+                <div class="mb-2">
+                    <a href="/" class="fw-bold text-decoration-none">
+                        Ver todas
+                    </a>
+                </div>
+
+                <span th:if="${etiquetas.isEmpty()}">
+                    <span class="text-muted">No hay etiquetas</span>
+                </span>
+
+                <span th:each="e, iter : ${etiquetas}">
+                    <a th:href="@{'/etiqueta/' + ${e.etiqueta}}" th:text="${e.etiqueta}" class="text-decoration-none d-inline-block me-1"></a>
+                </span>
+
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<footer class="py-5 text-center text-body-secondary bg-body-tertiary">
+    <p><b>Integrantes:</b> Emil Paulino & Erwin Martinez</p>
+    <p class="mb-0"><a href="#">Back to top</a></p>
+</footer>
+
+</body>
+</html>
