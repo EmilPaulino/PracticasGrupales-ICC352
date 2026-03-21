@@ -1,5 +1,7 @@
 package edu.pucmm.eict.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import edu.pucmm.eict.web.contoladores.ArticuloController;
 import edu.pucmm.eict.web.contoladores.LoginController;
 import edu.pucmm.eict.web.contoladores.UsuarioController;
@@ -13,9 +15,31 @@ import edu.pucmm.eict.web.util.EncryptUtil;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.staticfiles.Location;
+import io.javalin.json.JavalinJackson;
 import io.javalin.rendering.template.JavalinThymeleaf;
 
+import java.util.List;
+import java.util.Map;
+
 public class Main {
+    private static int parsePage(Context ctx) {
+        String pageParam = ctx.queryParam("page");
+        if (pageParam == null) return 0;
+        try {
+            return Integer.parseInt(pageParam);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private static void setAtributosComunes(Context ctx, List<?> articulos, long total, int page, EtiquetaService etiquetaService) {
+        int totalPaginas = (int) Math.ceil(total / 5.0);
+        ctx.attribute("articulos", articulos);
+        ctx.attribute("etiquetas", etiquetaService.findAll());
+        ctx.attribute("page", page);
+        ctx.attribute("totalPaginas", totalPaginas);
+    }
+
     public static void main(String[] args) {
         var app = Javalin.create(config -> {
             //Archivos estáticos
@@ -29,80 +53,69 @@ public class Main {
 
             //Configuracion de thymeleaf
             config.fileRenderer(new JavalinThymeleaf());
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new Hibernate6Module());
+            config.jsonMapper(new JavalinJackson(mapper, false));
         });
 
         BootStrapServices.getInstancia().init();
 
         //Endpoint para la /, es decir, index
         app.get("/", ctx -> {
-            // Página actual (por defecto 0)
-            int page = 0;
-            String pageParam = ctx.queryParam("page");
-            if (pageParam != null) {
-                try {
-                    page = Integer.parseInt(pageParam);
-                } catch (NumberFormatException e) {
-                    page = 0;
-                }
-            }
-
-            //Servicios
+            int page = parsePage(ctx);
             ArticuloService articuloService = ArticuloService.getInstancia();
             EtiquetaService etiquetaService = EtiquetaService.getInstancia();
-
-            // Lista de artículos
-            var articulos = articuloService.listarPaginado(page);
-            //Total de artículos
-            long total = articuloService.contarArticulos();
-            // Total de páginas (5 artículos p/página)
-            int totalPaginas = (int) Math.ceil(total / 5.0);
-
-            // Datos enviados a la vista
-            ctx.attribute("articulos", articulos);
-            ctx.attribute("etiquetas", etiquetaService.findAll());
-            ctx.attribute("page", page);
-            ctx.attribute("totalPaginas", totalPaginas);
-
+            setAtributosComunes(ctx, articuloService.listarPaginado(page), articuloService.contarArticulos(), page, etiquetaService);
             ctx.render("templates/index.html");
         });
 
         //Endpoint para filtrar por etiqueta en el index
         app.get("/etiqueta/{nombre}", ctx -> {
-
-            // Etiqueta seleccionada desde la URL
             String nombre = ctx.pathParam("nombre");
-
-            // Página actual (por defecto 0)
-            int page = 0;
-            String pageParam = ctx.queryParam("page");
-            if (pageParam != null) {
-                try {
-                    page = Integer.parseInt(pageParam);
-                } catch (NumberFormatException e) {
-                    page = 0;
-                }
-            }
-
-            // Servicios
+            int page = parsePage(ctx);
             ArticuloService articuloService = ArticuloService.getInstancia();
             EtiquetaService etiquetaService = EtiquetaService.getInstancia();
 
-            // Lista de artículos filtrados por etiqueta con paginación
-            var articulos = articuloService.listarPorEtiquetaPaginado(nombre, page);
-            // Total de artículos con esa etiqueta
-            long total = articuloService.contarPorEtiqueta(nombre);
+            setAtributosComunes(ctx,
+                    articuloService.listarPorEtiquetaPaginado(nombre, page),
+                    articuloService.contarPorEtiqueta(nombre),
+                    page,
+                    etiquetaService);
 
-            // Total de páginas (5 artículos p/página)
+            ctx.attribute("etiquetaSeleccionada", nombre);
+            ctx.render("templates/index.html");
+        });
+
+        //Rutas para el fetch
+        app.get("/api/articulos", ctx -> {
+            int page = parsePage(ctx);
+            ArticuloService articuloService = ArticuloService.getInstancia();
+
+            long total = articuloService.contarArticulos();
             int totalPaginas = (int) Math.ceil(total / 5.0);
 
-            // Datos enviados a la vista
-            ctx.attribute("articulos", articulos);
-            ctx.attribute("etiquetas", etiquetaService.findAll());
-            ctx.attribute("page", page);
-            ctx.attribute("totalPaginas", totalPaginas);
-            ctx.attribute("etiquetaSeleccionada", nombre); // Para mantener el filtro activo
+            ctx.json(Map.of(
+                    "articulos",    articuloService.listarPaginado(page),
+                    "page",         page,
+                    "totalPaginas", totalPaginas
+            ));
+        });
 
-            ctx.render("templates/index.html");
+        app.get("/api/etiqueta/{nombre}", ctx -> {
+            String nombre = ctx.pathParam("nombre");
+            int page = parsePage(ctx);
+            ArticuloService articuloService = ArticuloService.getInstancia();
+
+            long total = articuloService.contarPorEtiqueta(nombre);
+            int totalPaginas = (int) Math.ceil(total / 5.0);
+
+            ctx.json(Map.of(
+                    "articulos",    articuloService.listarPorEtiquetaPaginado(nombre, page),
+                    "page",         page,
+                    "totalPaginas", totalPaginas,
+                    "etiqueta",     nombre
+            ));
         });
 
         //Endpoints para Login

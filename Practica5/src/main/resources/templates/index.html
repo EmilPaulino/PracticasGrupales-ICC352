@@ -12,13 +12,11 @@
     <link href="/estilos/estilosIndex.css" rel="stylesheet"/>
     <link href="/estilos/estilosNavbar.css" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
 </head>
 
 <body>
 
 <div class="container">
-    <!--Se agrega el navbar desde una plantilla -->
     <div th:replace="~{/templates/fragmentos/navbar.html :: navbar}"></div>
 </div>
 
@@ -40,63 +38,73 @@
         <!-- COLUMNA IZQUIERDA (8) -->
         <div class="col-md-8">
 
-            <!-- MENSAJE SI NO HAY ARTÍCULOS -->
-            <div th:if="${articulos.isEmpty() and etiquetaSeleccionada == null}" class="alert alert-info">
-                No hay artículos publicados todavía.
-            </div>
+            <!-- CONTENEDOR DE ARTÍCULOS — JS lo reemplaza en cambios de página -->
+            <div id="lista-articulos">
 
-            <!-- MENSAJE SI LA ETIQUETA NO EXISTE -->
-            <div th:if="${articulos.isEmpty() and etiquetaSeleccionada != null}" class="alert alert-warning">
-                No hay artículos asociados a la etiqueta
-                <strong th:text="${etiquetaSeleccionada}"></strong>.
-            </div>
+                <!-- MENSAJE SI NO HAY ARTÍCULOS -->
+                <div th:if="${articulos.isEmpty() and etiquetaSeleccionada == null}" class="alert alert-info">
+                    No hay artículos publicados todavía.
+                </div>
 
-            <div class="row mb-2" th:each="articulo : ${articulos}">
-                <div class="col-12">
-                    <div class="row g-0 border overflow-hidden flex-md-row mb-4 shadow-sm position-relative">
-                        <div class="col p-4 d-flex flex-column position-static">
+                <!-- MENSAJE SI LA ETIQUETA NO EXISTE -->
+                <div th:if="${articulos.isEmpty() and etiquetaSeleccionada != null}" class="alert alert-warning">
+                    No hay artículos asociados a la etiqueta
+                    <strong th:text="${etiquetaSeleccionada}"></strong>.
+                </div>
 
-                            <!-- ETIQUETAS DEL ARTÍCULO -->
-                            <div class="d-flex flex-wrap gap-1 mb-2">
-                                <span th:each="e, iter : ${articulo.listaEtiquetas}">
-                                    <strong class="text-primary-emphasis"
-                                            th:text="${e.etiqueta}"></strong>
-                                    <span th:if="${!iter.last}">, </span>
-                                </span>
+                <div class="row mb-2" th:each="articulo : ${articulos}">
+                    <div class="col-12">
+                        <div class="row g-0 border overflow-hidden flex-md-row mb-4 shadow-sm position-relative">
+                            <div class="col p-4 d-flex flex-column position-static">
+
+                                <!-- ETIQUETAS DEL ARTÍCULO -->
+                                <div class="d-flex flex-wrap gap-1 mb-2">
+                                    <span th:each="e, iter : ${articulo.listaEtiquetas}">
+                                        <strong class="text-primary-emphasis"
+                                                th:text="${e.etiqueta}"></strong>
+                                        <span th:if="${!iter.last}">, </span>
+                                    </span>
+                                </div>
+
+                                <h3 class="mb-0" th:text="${articulo.titulo}"></h3>
+
+                                <div class="mb-1 text-body-secondary">
+                                    Por <strong th:text="${articulo.autor.username}"></strong>
+                                    | <span th:text="${articulo.fecha}"></span>
+                                </div>
+
+                                <p class="card-text mb-auto"
+                                   th:text="${#strings.length(articulo.cuerpo) > 70} ?
+                                   ${#strings.substring(articulo.cuerpo,0,70)} + '...' :
+                                   ${articulo.cuerpo}">
+                                </p>
+
+                                <a th:href="@{'/articulos/ver/' + ${articulo.id}}"
+                                   class="icon-link gap-1 icon-link-hover stretched-link">
+                                    Leer más
+                                </a>
+
                             </div>
-
-                            <h3 class="mb-0" th:text="${articulo.titulo}"></h3>
-
-                            <div class="mb-1 text-body-secondary">
-                                Por <strong th:text="${articulo.autor.username}"></strong>
-                                | <span th:text="${articulo.fecha}"></span>
-                            </div>
-
-                            <p class="card-text mb-auto"
-                               th:text="${#strings.length(articulo.cuerpo) > 70} ?
-                               ${#strings.substring(articulo.cuerpo,0,70)} + '...' :
-                               ${articulo.cuerpo}">
-                            </p>
-
-                            <a th:href="@{'/articulos/ver/' + ${articulo.id}}"
-                               class="icon-link gap-1 icon-link-hover stretched-link">
-                                Leer más
-                            </a>
-
                         </div>
                     </div>
                 </div>
+
             </div>
-            <!-- PAGINACION -->
-            <nav aria-label="Page navigation" th:if="${totalPaginas > 1}">
+            <!-- /lista-articulos -->
+
+            <!-- PAGINACIÓN — data-* guardan el estado inicial del servidor -->
+            <nav id="paginacion"
+                 aria-label="Page navigation"
+                 th:if="${totalPaginas > 1}"
+                 th:data-page="${page}"
+                 th:data-total-paginas="${totalPaginas}"
+                 th:data-etiqueta="${etiquetaSeleccionada}">
+
                 <ul class="pagination justify-content-center">
 
                     <!-- Anterior -->
                     <li class="page-item" th:classappend="${page == 0} ? 'disabled'">
-                        <a class="page-link"
-                           th:href="@{${etiquetaSeleccionada != null} ?
-                    '/etiqueta/' + ${etiquetaSeleccionada} + '?page=' + ${page - 1} :
-                    '/?page=' + ${page - 1}}">
+                        <a class="page-link" href="#" onclick="cambiarPagina(estado.page - 1); return false;">
                             Anterior
                         </a>
                     </li>
@@ -106,27 +114,24 @@
                         th:each="i : ${#numbers.sequence(0, totalPaginas - 1)}"
                         th:classappend="${i == page} ? 'active'">
                         <a class="page-link"
-                           th:href="@{${etiquetaSeleccionada != null} ?
-                    '/etiqueta/' + ${etiquetaSeleccionada} + '?page=' + ${i} :
-                    '/?page=' + ${i}}"
                            th:text="${i + 1}"
-                           th:aria-current="${i == page} ? 'page' : null">
+                           th:attr="onclick='cambiarPagina(' + ${i} + '); return false;'"
+                           th:aria-current="${i == page} ? 'page' : null"
+                           href="#">
                         </a>
                     </li>
 
                     <!-- Siguiente -->
                     <li class="page-item"
                         th:classappend="${page == totalPaginas - 1} ? 'disabled'">
-                        <a class="page-link"
-                           th:href="@{${etiquetaSeleccionada != null} ?
-                    '/etiqueta/' + ${etiquetaSeleccionada} + '?page=' + ${page + 1} :
-                    '/?page=' + ${page + 1}}">
+                        <a class="page-link" href="#" onclick="cambiarPagina(estado.page + 1); return false;">
                             Siguiente
                         </a>
                     </li>
 
                 </ul>
             </nav>
+
         </div>
 
         <!-- COLUMNA DERECHA (4) -->
@@ -136,9 +141,7 @@
                 <h5 class="fw-bold">Filtrar Por Etiquetas</h5>
 
                 <div class="mb-2">
-                    <a href="/" class="fw-bold text-decoration-none">
-                        Ver todas
-                    </a>
+                    <a href="/" class="fw-bold text-decoration-none">Ver todas</a>
                 </div>
 
                 <span th:if="${etiquetas.isEmpty()}">
@@ -146,7 +149,10 @@
                 </span>
 
                 <span th:each="e, iter : ${etiquetas}">
-                    <a th:href="@{'/etiqueta/' + ${e.etiqueta}}" th:text="${e.etiqueta}" class="text-decoration-none d-inline-block me-1"></a>
+                    <a th:href="@{'/etiqueta/' + ${e.etiqueta}}"
+                       th:text="${e.etiqueta}"
+                       class="text-decoration-none d-inline-block me-1">
+                    </a>
                 </span>
 
             </div>
@@ -160,6 +166,115 @@
     <p><b>Integrantes:</b> Emil Paulino & Erwin Martinez</p>
     <p class="mb-0"><a href="#">Back to top</a></p>
 </footer>
+
+<script>
+    const navEl = document.getElementById("paginacion");
+
+    const estado = {
+        page:        navEl ? parseInt(navEl.dataset.page)        || 0 : 0,
+        totalPaginas: navEl ? parseInt(navEl.dataset.totalPaginas) || 1 : 1,
+        etiqueta:    navEl ? navEl.dataset.etiqueta || null       : null,
+    };
+
+    async function fetchArticulos(page) {
+        const url = estado.etiqueta
+            ? `/api/etiqueta/${estado.etiqueta}?page=${page}`
+            : `/api/articulos?page=${page}`;
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Error al cargar artículos");
+        return res.json();
+    }
+
+    function renderArticulos(articulos) {
+        const contenedor = document.getElementById("lista-articulos");
+
+        if (articulos.length === 0) {
+            const msg = estado.etiqueta
+                ? `No hay artículos asociados a la etiqueta <strong>${estado.etiqueta}</strong>.`
+                : "No hay artículos publicados todavía.";
+            const tipo = estado.etiqueta ? "alert-warning" : "alert-info";
+            contenedor.innerHTML = `<div class="alert ${tipo}">${msg}</div>`;
+            return;
+        }
+
+        contenedor.innerHTML = articulos.map(a => {
+            const resumen = a.cuerpo.length > 70 ? a.cuerpo.substring(0, 70) + "..." : a.cuerpo;
+            const etiquetas = a.listaEtiquetas.map((e, i) =>
+                `<strong class="text-primary-emphasis">${e.etiqueta}</strong>${i < a.listaEtiquetas.length - 1 ? ", " : ""}`
+            ).join("");
+
+            return `
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <div class="row g-0 border overflow-hidden flex-md-row mb-4 shadow-sm position-relative">
+                            <div class="col p-4 d-flex flex-column position-static">
+                                <div class="d-flex flex-wrap gap-1 mb-2">${etiquetas}</div>
+                                <h3 class="mb-0">${a.titulo}</h3>
+                                <div class="mb-1 text-body-secondary">
+                                    Por <strong>${a.autor.username}</strong> | <span>${a.fecha}</span>
+                                </div>
+                                <p class="card-text mb-auto">${resumen}</p>
+                                <a href="/articulos/ver/${a.id}" class="icon-link gap-1 icon-link-hover stretched-link">
+                                    Leer más
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }).join("");
+    }
+
+    function renderPaginacion(page, totalPaginas) {
+        const nav = document.getElementById("paginacion");
+        if (!nav) return;
+
+        const numeros = Array.from({ length: totalPaginas }, (_, i) => `
+            <li class="page-item ${i === page ? "active" : ""}">
+                <a class="page-link" href="#"
+                   onclick="cambiarPagina(${i}); return false;"
+                   ${i === page ? 'aria-current="page"' : ""}>${i + 1}</a>
+            </li>`
+        ).join("");
+
+        nav.innerHTML = `
+            <ul class="pagination justify-content-center">
+                <li class="page-item ${page === 0 ? "disabled" : ""}">
+                    <a class="page-link" href="#"
+                       onclick="cambiarPagina(${page - 1}); return false;">Anterior</a>
+                </li>
+                ${numeros}
+                <li class="page-item ${page === totalPaginas - 1 ? "disabled" : ""}">
+                    <a class="page-link" href="#"
+                       onclick="cambiarPagina(${page + 1}); return false;">Siguiente</a>
+                </li>
+            </ul>`;
+    }
+
+    async function cambiarPagina(page) {
+        if (page < 0 || page >= estado.totalPaginas) return;
+
+        try {
+            const datos = await fetchArticulos(page);
+            estado.page = datos.page;
+            estado.totalPaginas = datos.totalPaginas;
+
+            renderArticulos(datos.articulos);
+            renderPaginacion(datos.page, datos.totalPaginas);
+
+            // Actualiza la URL sin recargar
+            const nuevaUrl = estado.etiqueta
+                ? `/etiqueta/${estado.etiqueta}?page=${page}`
+                : `/?page=${page}`;
+            window.history.pushState({ page }, "", nuevaUrl);
+
+            window.scrollTo({ top: 0, behavior: "smooth" });
+
+        } catch (err) {
+            console.error("Error al cambiar de página:", err);
+        }
+    }
+</script>
 
 </body>
 </html>

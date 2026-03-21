@@ -65,15 +65,26 @@ public class ArticuloService extends GestionDb<Articulo> {
     public List<Articulo> listarPaginado(int page) {
         EntityManager em = getEntityManager();
         try {
-            return em.createQuery(
-                    "SELECT DISTINCT a FROM Articulo a LEFT JOIN FETCH a.listaEtiquetas ORDER BY a.fecha DESC", Articulo.class)
+            List<Long> ids = em.createQuery(
+                            "SELECT a.id FROM Articulo a ORDER BY a.fecha DESC", Long.class)
                     .setFirstResult(page * 5)
                     .setMaxResults(5)
+                    .getResultList();
+
+            if (ids.isEmpty()) return List.of();
+
+            return em.createQuery(
+                            "SELECT DISTINCT a FROM Articulo a " +
+                                    "LEFT JOIN FETCH a.listaEtiquetas " +
+                                    "WHERE a.id IN :ids " +
+                                    "ORDER BY a.fecha DESC", Articulo.class)
+                    .setParameter("ids", ids)
                     .getResultList();
         } finally {
             em.close();
         }
     }
+
 
     public long contarArticulos() {
         EntityManager em = getEntityManager();
@@ -100,11 +111,22 @@ public class ArticuloService extends GestionDb<Articulo> {
     public List<Articulo> listarPorEtiquetaPaginado(String nombre, int page) {
         EntityManager em = getEntityManager();
         try {
-            return em.createQuery(
-                    "SELECT DISTINCT a FROM Articulo a JOIN FETCH a.listaEtiquetas e WHERE e.etiqueta = :nombre ORDER BY a.fecha DESC", Articulo.class)
+            List<Long> ids = em.createQuery(
+                            "SELECT a.id FROM Articulo a JOIN a.listaEtiquetas e " +
+                                    "WHERE e.etiqueta = :nombre ORDER BY a.fecha DESC", Long.class)
                     .setParameter("nombre", nombre)
                     .setFirstResult(page * 5)
                     .setMaxResults(5)
+                    .getResultList();
+
+            if (ids.isEmpty()) return List.of();
+
+            return em.createQuery(
+                            "SELECT DISTINCT a FROM Articulo a " +
+                                    "LEFT JOIN FETCH a.listaEtiquetas " +
+                                    "WHERE a.id IN :ids " +
+                                    "ORDER BY a.fecha DESC", Articulo.class)
+                    .setParameter("ids", ids)
                     .getResultList();
         } finally {
             em.close();
