@@ -131,66 +131,9 @@
     <p class="mb-0"><a href="#">Back to top</a></p>
 </footer>
 
-<!-- Botón flotante del chat -->
-<button id="chat-fab"
-        class="btn btn-primary rounded-circle shadow-lg position-fixed d-flex align-items-center justify-content-center"
-        style="bottom: 24px; right: 24px; width: 56px; height: 56px; z-index: 1050;"
-        onclick="toggleChat()">
-    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="white" viewBox="0 0 16 16">
-        <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414L2 14.414V2z"/>
-    </svg>
-</button>
-
-<!-- Ventana del chat -->
-<div id="chat-window"
-     class="position-fixed border rounded-3 bg-white shadow"
-     style="bottom: 92px; right: 24px; width: 320px; z-index: 1049; display: none;">
-
-    <!-- Header -->
-    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom bg-primary rounded-top-3">
-        <span class="text-white fw-semibold" style="font-size: 14px;">Chat con el equipo</span>
-        <button class="btn btn-sm text-white p-0 border-0" onclick="toggleChat()" style="font-size: 20px; line-height: 1;">&times;</button>
-    </div>
-
-    <!-- Panel: ingresar nombre -->
-    <div id="panel-nombre" class="p-4 text-center">
-        <p class="text-muted mb-1" style="font-size: 13px;">¿Con quién hablamos?</p>
-        <p class="text-muted mb-3" style="font-size: 12px;">Ingresa tu nombre para comenzar.</p>
-        <input id="input-nombre"
-               type="text"
-               class="form-control form-control-sm mb-3"
-               placeholder="Tu nombre..."
-               oninput="validarNombre(this.value)"/>
-        <button id="btn-iniciar" class="btn btn-primary btn-sm w-100" disabled onclick="iniciarChat()">
-            Iniciar chat
-        </button>
-    </div>
-
-    <!-- Panel: mensajes -->
-    <div id="panel-chat" style="display: none;">
-        <div class="px-3 py-2 border-bottom bg-light d-flex align-items-center gap-2">
-            <span class="badge bg-primary bg-opacity-10 text-primary" id="badge-nombre" style="font-size: 12px;"></span>
-            <span class="text-muted" style="font-size: 11px;">conectado</span>
-        </div>
-        <div id="chat-mensajes" class="px-3 py-2 overflow-auto" style="height: 220px; display: flex; flex-direction: column; gap: 8px;"></div>
-        <div class="d-flex gap-2 px-3 py-2 border-top">
-            <input id="input-mensaje"
-                   type="text"
-                   class="form-control form-control-sm"
-                   placeholder="Escribe un mensaje..."
-                   onkeydown="if(event.key==='Enter') enviarMensaje()"/>
-            <button class="btn btn-primary btn-sm px-3" onclick="enviarMensaje()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 16 16">
-                    <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855l-.452.18a.5.5 0 0 0-.082.887l.41.26 4.995 3.178 3.178 4.995.26.41a.5.5 0 0 0 .886-.083zm-1.833 1.89L6.637 10.07l-.215-.338L14.131 2.576z"/>
-                </svg>
-            </button>
-        </div>
-    </div>
-
-</div>
+<div th:replace="~{/templates/fragmentos/chat.html :: chat}"></div>
 
 <script>
-    // Paginación
     const navEl = document.getElementById("paginacion");
     const estado = {
         page:         navEl ? parseInt(navEl.dataset.page)         || 0 : 0,
@@ -210,7 +153,7 @@
     function renderArticulos(articulos) {
         const contenedor = document.getElementById("lista-articulos");
         if (articulos.length === 0) {
-            const msg  = estado.etiqueta
+            const msg = estado.etiqueta
                 ? `No hay artículos asociados a la etiqueta <strong>${estado.etiqueta}</strong>.`
                 : "No hay artículos publicados todavía.";
             contenedor.innerHTML = `<div class="alert ${estado.etiqueta ? 'alert-warning' : 'alert-info'}">${msg}</div>`;
@@ -276,47 +219,6 @@
         } catch (err) {
             console.error("Error al cambiar de página:", err);
         }
-    }
-
-    // Chat
-    function toggleChat() {
-        const win = document.getElementById("chat-window");
-        win.style.display = win.style.display === "none" ? "block" : "none";
-    }
-
-    function validarNombre(valor) {
-        document.getElementById("btn-iniciar").disabled = valor.trim().length === 0;
-    }
-
-    function iniciarChat() {
-        const nombre = document.getElementById("input-nombre").value.trim();
-        document.getElementById("badge-nombre").textContent = nombre;
-        document.getElementById("panel-nombre").style.display = "none";
-        document.getElementById("panel-chat").style.display = "block";
-        agregarMensaje("¡Hola " + nombre + "! ¿En qué te podemos ayudar?", "admin");
-    }
-
-    function agregarMensaje(texto, tipo) {
-        const contenedor = document.getElementById("chat-mensajes");
-        const esUsuario  = tipo === "usuario";
-        const div = document.createElement("div");
-        div.className = `d-flex justify-content-${esUsuario ? "end" : "start"}`;
-        div.innerHTML = `
-            <div class="px-3 py-2 rounded-3 ${esUsuario ? "bg-primary text-white" : "bg-light text-dark"}"
-                 style="max-width: 75%; font-size: 13px;">
-                ${texto}
-            </div>`;
-        contenedor.appendChild(div);
-        contenedor.scrollTop = contenedor.scrollHeight;
-    }
-
-    function enviarMensaje() {
-        const input = document.getElementById("input-mensaje");
-        const texto = input.value.trim();
-        if (!texto) return;
-        agregarMensaje(texto, "usuario");
-        input.value = "";
-        // Aquí se conectará WebSocket
     }
 </script>
 
