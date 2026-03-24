@@ -130,7 +130,7 @@ public class Main {
                     try {
                         String username = EncryptUtil.decrypt(cookie);
                         UsuarioService usuarioService = new UsuarioService();
-                        Usuario usuario = usuarioService.buscarPorUsername(username);
+                        Usuario usuario = usuarioService.findByUsername(username);
                         if (usuario != null) {
                             ctx.sessionAttribute("user", usuario);
                             user = usuario;
@@ -203,7 +203,7 @@ public class Main {
                     try {
                         String username = EncryptUtil.decrypt(cookie);
                         UsuarioService usuarioService = new UsuarioService();
-                        Usuario usuario = usuarioService.buscarPorUsername(username);
+                        Usuario usuario = usuarioService.findByUsername(username);
                         if (usuario != null) {
                             ctx.sessionAttribute("usuario", usuario);
                         }

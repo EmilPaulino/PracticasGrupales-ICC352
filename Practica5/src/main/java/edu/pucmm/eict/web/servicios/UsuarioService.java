@@ -76,7 +76,7 @@ public class UsuarioService extends GestionDb<Usuario> {
     /**
      * Busca por username
      */
-    public Usuario buscarPorUsername(String username) {
+    public Usuario findByUsername(String username) {
 
         EntityManager em = getEntityManager();
         Usuario usuario = null;

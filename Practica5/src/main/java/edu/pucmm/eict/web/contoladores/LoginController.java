@@ -11,7 +11,12 @@ public class LoginController {
     private UsuarioService usuarioService = UsuarioService.getInstancia();
 
     public void mostrarLogin(Context ctx) {
-        ctx.redirect("/html/login.html");
+        String error = ctx.sessionAttribute("error");
+        if (error != null) {
+            ctx.attribute("error", error);
+            ctx.sessionAttribute("error", null); // eliminar error después de usarlo
+        }
+        ctx.render("/templates/usuarios/login.html");
     }
 
     public void procesarLogin(Context ctx) {
@@ -36,7 +41,8 @@ public class LoginController {
             ctx.redirect("/");
 
         } else {
-            ctx.result("Credenciales incorrectas");
+            ctx.sessionAttribute("error", "Credenciales incorrectas");
+            ctx.redirect("/login");
         }
     }
 

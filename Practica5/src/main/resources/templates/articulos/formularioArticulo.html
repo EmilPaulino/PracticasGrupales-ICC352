@@ -23,9 +23,7 @@
 
 <div class="formArticulo container">
 
-    <div th:if="${error}" class="alert alert-danger text-center">
-        <span th:text="${error}"></span>
-    </div>
+    <div th:if="${error != null}" class="alert alert-danger" th:text="${error}"></div>
 
     <form th:action="${articulo != null} ? @{'/articulos/editar/' + ${articulo.id}} : @{/articulos/crear}"
           method="post">

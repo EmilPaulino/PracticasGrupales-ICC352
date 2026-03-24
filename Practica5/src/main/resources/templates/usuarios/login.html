@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Iniciar Sesión</title>
@@ -15,7 +15,7 @@
         <div class="row flex-nowrap justify-content-between align-items-center">
 
             <div class="col-4">
-                <a class="blog-header-logo text-body-emphasis text-decoration-none" href="/">
+                <a class="blog-header-logo text-body-emphasis text-decoration-none" href="/public">
                     Mi Blog
                 </a>
             </div>
@@ -38,6 +38,7 @@
         Iniciar Sesión
     </div>
     <div class="card-body">
+        <div th:if="${error != null}" class="alert alert-danger" th:text="${error}"></div>
         <form method="post" action="/procesarLogin">
             <div class="mb-3">
                 <label class="form-label">Nombre de usuario:</label>

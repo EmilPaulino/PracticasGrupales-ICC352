@@ -37,6 +37,12 @@ public class UsuarioController {
         boolean administrator = ctx.formParam("administrator") != null;
         boolean autor = ctx.formParam("autor") != null;
 
+        if(usuarioService.findByUsername(username) != null){
+            ctx.attribute("error", "El nombre de usuario ya existe");
+            ctx.render("/templates/usuarios/formularioUsuario.html");
+            return;
+        }
+
         String fotoBase64 = null;
 
         var uploadedFile = ctx.uploadedFile("foto");
@@ -44,7 +50,9 @@ public class UsuarioController {
         if(uploadedFile != null){
             try (var is = uploadedFile.content()) {
                 byte[] bytes = is.readAllBytes();
-                fotoBase64 = java.util.Base64.getEncoder().encodeToString(bytes);
+                if(bytes.length > 0){
+                    fotoBase64 = java.util.Base64.getEncoder().encodeToString(bytes);
+                }
             } catch(Exception e){
                 e.printStackTrace();
             }
@@ -53,16 +61,11 @@ public class UsuarioController {
         Usuario usuario = new Usuario(username, nombre, password, administrator, autor);
         usuario.setFotoBase64(fotoBase64);
 
-        Usuario creado = usuarioService.crearUsuario(usuario);
-
-        if(creado == null){
-            ctx.attribute("error", "El nombre de usuario ya existe");
-            ctx.render("/templates/usuarios/formularioUsuario.html");
-            return;
-        }
+        usuarioService.crearUsuario(usuario);
 
         ctx.redirect("/usuarios");
     }
+
     /*
      * Muestra el formulario para editar usuario
      */
@@ -84,22 +87,9 @@ public class UsuarioController {
     public void editar(Context ctx){
         long id = Long.parseLong(ctx.pathParam("id"));
         Usuario usuario = usuarioService.find(id);
-        var uploadedFile = ctx.uploadedFile("foto");
 
         if(usuario == null){
             throw new NotFoundResponse("Usuario no encontrado");
-        }
-
-        if(uploadedFile != null){
-            try (var is = uploadedFile.content()) {
-                byte[] bytes = is.readAllBytes();
-                if(bytes.length > 0){ // Se actualiza la foto solo si se sube otra nueva
-                    String fotoBase64 = java.util.Base64.getEncoder().encodeToString(bytes);
-                    usuario.setFotoBase64(fotoBase64);
-                }
-            } catch(Exception e){
-                e.printStackTrace();
-            }
         }
 
         String username = ctx.formParam("username");
@@ -108,22 +98,40 @@ public class UsuarioController {
         boolean administrator = ctx.formParam("administrator") != null;
         boolean autor = ctx.formParam("autor") != null;
 
-        usuario.setUsername(username);
-        usuario.setNombre(nombre);
-        if(password != null && !password.isEmpty()){
-            usuario.setPassword(password);
-        }
-        usuario.setAdministrator(administrator);
-        usuario.setAutor(autor);
+        Usuario existente = usuarioService.findByUsername(username);
 
-        Usuario actualizado = usuarioService.actualizarUsuario(usuario);
-
-        if(actualizado == null){
+        if(existente != null && existente.getId() != id){
             ctx.attribute("error", "El nombre de usuario ya existe");
-            ctx.attribute("usuario", usuarioService.find(id));
+            ctx.attribute("usuario", usuario);
             ctx.render("/templates/usuarios/formularioUsuario.html");
             return;
         }
+
+        var uploadedFile = ctx.uploadedFile("foto");
+
+        if(uploadedFile != null){
+            try (var is = uploadedFile.content()) {
+                byte[] bytes = is.readAllBytes();
+                if(bytes.length > 0){
+                    String fotoBase64 = java.util.Base64.getEncoder().encodeToString(bytes);
+                    usuario.setFotoBase64(fotoBase64);
+                }
+            } catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+
+        usuario.setUsername(username);
+        usuario.setNombre(nombre);
+
+        if(password != null && !password.isEmpty()){
+            usuario.setPassword(password);
+        }
+
+        usuario.setAdministrator(administrator);
+        usuario.setAutor(autor);
+
+        usuarioService.actualizarUsuario(usuario);
 
         ctx.redirect("/usuarios");
     }
