@@ -97,6 +97,18 @@ public class Main {
 
         });
 
+        app.ws("/chats-admin", ws -> {
+            ws.onConnect(ctx -> {
+                ctx.session.setIdleTimeout(Duration.ofMinutes(30));
+                String key = ctx.sessionId();
+                chatService.suscribirAdminLista(key, ctx.session);
+            });
+
+            ws.onClose(ctx -> {
+                chatService.desuscribirAdminLista(ctx.sessionId());
+            });
+        });
+
         //Endpoint para la /, es decir, index
         app.get("/", ctx -> {
             int page = parsePage(ctx);
