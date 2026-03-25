@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es" data-bs-theme="auto" xmlns:th="http://www.thymeleaf.org" class="h-100">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="'Chat — ' + ${conversacion.nombreUsuario}">Chat</title>
+    <link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="/estilos/estilosNavbar.css" rel="stylesheet"/>
+    <link href="/estilos/estilosChats.css" rel="stylesheet"/>
+
+</head>
+
+<body>
+
+<div class="container">
+    <div th:replace="~{/templates/fragmentos/navbar.html :: navbar}"></div>
+</div>
+
+<main class="container">
+
+    <div class="mt-3 p-2 mb-2 rounded bg-white border shadow-sm">
+        <div class="d-flex align-items-center gap-3 px-2">
+            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white avatar-chat"
+                 th:text="${#strings.substring(conversacion.nombreUsuario,0,1).toUpperCase()}">
+            </div>
+            <div class="flex-grow-1">
+                <h5 class="mb-0 fw-bold" th:text="${conversacion.nombreUsuario}">Usuario</h5>
+                <div class="d-flex align-items-center gap-2">
+                    <span id="estadoConexion" class="badge rounded-pill text-bg-success" style="font-size: 0.65rem;">En línea</span>
+                </div>
+            </div>
+            <div class="d-flex gap-1">
+                <a href="/chats" class="btn btn-sm btn-light border"><i class="bi bi-arrow-left"></i></a>
+                <a th:href="@{/chat/cerrar/{id}(id=${conversacion.id})}" class="btn btn-sm btn-outline-danger"
+                   onclick="return confirm('¿Cerrar?')"><i class="bi bi-x-lg"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-container card border shadow-sm mb-3">
+
+        <div id="mensajes" class="p-3 d-flex flex-column gap-3">
+            <div th:each="msg : ${conversacion.mensajes}"
+                 th:classappend="${msg.tipo == 'admin'} ? 'burbuja-admin d-flex justify-content-end' : 
+                                (${msg.tipo == 'sistema'} ? 'burbuja-sistema d-flex justify-content-center text-center' : 
+                                'burbuja-usuario d-flex justify-content-start')">
+
+                <div style="max-width: 80%">
+                    <div class="burbuja-texto shadow-sm" th:text="${msg.contenido}"></div>
+                    <div class="text-muted mt-1 px-1" style="font-size: 0.65rem;">
+                        <span th:text="${msg.remitente}"></span> · <span
+                            th:text="${#temporals.format(msg.fecha,'HH:mm')}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer bg-white p-3 border-top">
+            <div class="input-group">
+                <textarea id="msgInput" class="form-control bg-light border-0" rows="1"
+                          placeholder="Escribe un mensaje..." style="resize: none;"></textarea>
+                <button id="sendBtn" class="btn btn-primary px-4">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<footer class="py-3 text-center text-body-secondary bg-white border-top">
+    <small><b>Integrantes:</b> Emil Paulino & Erwin Martinez</small>
+</footer>
+
+<script th:inline="javascript">
+    /* Mismo script de WebSocket de antes */
+    const CHAT_ID = [[${conversacion.id}]];
+    const WS_URL = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/chat-admin?id=${CHAT_ID}`;
+    const mensajesEl = document.getElementById("mensajes");
+    const msgInput = document.getElementById("msgInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const estadoBadge = document.getElementById("estadoConexion");
+
+    let ws;
+
+    function conectar() {
+        ws = new WebSocket(WS_URL);
+        ws.onopen = () => {
+            estadoBadge.textContent = "En línea";
+            estadoBadge.className = "badge rounded-pill text-bg-success";
+        };
+        ws.onmessage = ({data}) => {
+            try {
+                const msg = JSON.parse(data);
+                agregarBurbuja(msg.remitente, msg.contenido, msg.tipo);
+            } catch {
+                agregarBurbuja("Sistema", data, "sistema");
+            }
+        };
+        ws.onclose = () => {
+            estadoBadge.textContent = "Offline";
+            estadoBadge.className = "badge rounded-pill text-bg-danger";
+        };
+    }
+
+    function agregarBurbuja(remitente, contenido, tipo) {
+        const wrap = document.createElement("div");
+        const hora = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+        wrap.className = tipo === "admin" ? "burbuja-admin d-flex justify-content-end" : (tipo === "sistema" ? "burbuja-sistema d-flex justify-content-center text-center" : "burbuja-usuario d-flex justify-content-start");
+        wrap.innerHTML = `<div style="max-width: 80%"><div class="burbuja-texto shadow-sm">${contenido}</div><div class="text-muted mt-1 px-1" style="font-size: 0.65rem;">${remitente} · ${hora}</div></div>`;
+        mensajesEl.appendChild(wrap);
+        mensajesEl.scrollTop = mensajesEl.scrollHeight;
+    }
+
+    function enviar() {
+        const texto = msgInput.value.trim();
+        if (!texto || !ws || ws.readyState !== WebSocket.OPEN) return;
+        ws.send(texto);
+        agregarBurbuja("Admin", texto, "admin");
+        msgInput.value = "";
+    }
+
+    sendBtn.addEventListener("click", enviar);
+    msgInput.addEventListener("keydown", e => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            enviar();
+        }
+    });
+
+    conectar();
+    window.onload = () => {
+        mensajesEl.scrollTop = mensajesEl.scrollHeight;
+    };
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

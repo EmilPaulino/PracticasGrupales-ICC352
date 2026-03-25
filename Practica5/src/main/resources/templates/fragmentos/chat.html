@@ -22,89 +22,237 @@
         <!-- Header -->
         <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom bg-primary rounded-top-3">
             <span class="text-white fw-semibold" style="font-size: 14px;">Chat con el equipo</span>
-            <button class="btn btn-sm text-white p-0 border-0" onclick="toggleChat()" style="font-size: 20px; line-height: 1;">&times;</button>
+            <button class="btn btn-sm text-white p-0 border-0"
+                    onclick="toggleChat()"
+                    style="font-size: 20px;">&times;
+            </button>
         </div>
 
-        <!-- Panel: ingresar nombre -->
+        <!-- Panel nombre -->
         <div id="panel-nombre" class="p-4 text-center">
-            <p class="text-muted mb-1" style="font-size: 13px;">¿Con quién hablamos?</p>
-            <p class="text-muted mb-3" style="font-size: 12px;">Ingresa tu nombre para comenzar.</p>
+
+            <p class="text-muted mb-1">
+                ¿Con quién hablamos?
+            </p>
+
             <input id="input-nombre"
                    type="text"
                    class="form-control form-control-sm mb-3"
                    placeholder="Tu nombre..."
                    oninput="validarNombre(this.value)"/>
-            <button id="btn-iniciar" class="btn btn-primary btn-sm w-100" disabled onclick="iniciarChat()">
+
+            <button id="btn-iniciar"
+                    class="btn btn-primary btn-sm w-100"
+                    disabled
+                    onclick="iniciarChat()">
+
                 Iniciar chat
+
             </button>
+
         </div>
 
-        <!-- Panel: mensajes -->
+        <!-- Panel chat -->
         <div id="panel-chat" style="display: none;">
-            <div class="px-3 py-2 border-bottom bg-light d-flex align-items-center gap-2">
-                <span class="badge bg-primary bg-opacity-10 text-primary" id="badge-nombre" style="font-size: 12px;"></span>
-                <span class="text-muted" style="font-size: 11px;">conectado</span>
+
+            <div class="px-3 py-2 border-bottom bg-light d-flex gap-2">
+
+                <span id="badge-nombre"
+                      class="badge bg-primary">
+                </span>
+
+                <span class="text-muted">
+                    En línea
+                </span>
+
             </div>
+
+            <!-- MENSAJES -->
+
             <div id="chat-mensajes"
                  class="px-3 py-2 overflow-auto"
-                 style="height: 220px; display: flex; flex-direction: column; gap: 8px;"></div>
+                 style="height: 220px;
+                        display:flex;
+                        flex-direction:column;
+                        gap:8px;">
+            </div>
+
+            <!-- INPUT -->
+
             <div class="d-flex gap-2 px-3 py-2 border-top">
+
                 <input id="input-mensaje"
                        type="text"
                        class="form-control form-control-sm"
                        placeholder="Escribe un mensaje..."
                        onkeydown="if(event.key==='Enter') enviarMensaje()"/>
-                <button class="btn btn-primary btn-sm px-3" onclick="enviarMensaje()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 16 16">
-                        <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855l-.452.18a.5.5 0 0 0-.082.887l.41.26 4.995 3.178 3.178 4.995.26.41a.5.5 0 0 0 .886-.083zm-1.833 1.89L6.637 10.07l-.215-.338L14.131 2.576z"/>
-                    </svg>
+
+                <button class="btn btn-primary btn-sm px-3"
+                        onclick="enviarMensaje()">
+
+                    Enviar
+
                 </button>
+
             </div>
+
         </div>
 
     </div>
 
     <script>
+
+        let socket;
+        let nombreUsuario = "";
+        let conversacionId = "";
+
+
+        /* UI */
+
         function toggleChat() {
-            const win = document.getElementById("chat-window");
-            win.style.display = win.style.display === "none" ? "block" : "none";
+
+            const win =
+                document.getElementById("chat-window");
+
+            win.style.display =
+                win.style.display === "none"
+                    ? "block"
+                    : "none";
+
         }
 
         function validarNombre(valor) {
             document.getElementById("btn-iniciar").disabled = valor.trim().length === 0;
         }
 
+
+        /* INICIAR CHAT */
         function iniciarChat() {
-            const nombre = document.getElementById("input-nombre").value.trim();
-            document.getElementById("badge-nombre").textContent = nombre;
-            document.getElementById("panel-nombre").style.display = "none";
+            nombreUsuario = document.getElementById("input-nombre").value.trim();
+            document.getElementById("badge-nombre").textContent = nombreUsuario;
+            document.getElementById("panel-nombre") .style.display = "none";
             document.getElementById("panel-chat").style.display = "block";
-            agregarMensaje("¡Hola " + nombre + "! ¿En qué te podemos ayudar?", "admin");
-            // Aquí conectarás el WebSocket
+            agregarMensaje("¡Hola " + nombreUsuario + "! ¿En qué te podemos ayudar?", "admin");
+            conectarWebSocket();
         }
+
+
+        /* CONEXION */
+
+        function conectarWebSocket() {
+
+            socket =new WebSocket("ws://" + location.hostname + ":" + location.port + "/chat-usuario?nombre=" + encodeURIComponent(nombreUsuario));
+            socket.onopen = () => {
+                console.log("WebSocket conectado");
+            };
+
+            socket.onmessage = (event) => {
+                console.log("Mensaje recibido:", event.data);
+                /* PRIMER MENSAJE = ID */
+                if (conversacionId === "") {
+                    conversacionId = event.data;
+                    console.log("ID conversación:", conversacionId);
+                    return;
+                }
+
+                /* MENSAJES ADMIN */
+
+                try {
+                    const msg = JSON.parse(event.data);
+                    agregarMensaje(msg.contenido, msg.tipo);
+                } catch (error) {
+                    console.error("Error parseando:", error);
+                    agregarMensaje(event.data, "admin");
+                }
+            };
+
+            socket.onerror = (error) => {
+                console.error("Error WebSocket:", error);
+            };
+
+            socket.onclose = () => {
+                console.log("WebSocket cerrado");
+            };
+
+        }
+
+
+        /* MENSAJES */
 
         function agregarMensaje(texto, tipo) {
-            const contenedor = document.getElementById("chat-mensajes");
-            const esUsuario  = tipo === "usuario";
-            const div = document.createElement("div");
-            div.className = `d-flex justify-content-${esUsuario ? "end" : "start"}`;
-            div.innerHTML = `
-                <div class="px-3 py-2 rounded-3 ${esUsuario ? "bg-primary text-white" : "bg-light text-dark"}"
-                     style="max-width: 75%; font-size: 13px;">
-                    ${texto}
-                </div>`;
+
+            const contenedor =
+                document.getElementById("chat-mensajes");
+
+            const esUsuario =
+                tipo === "usuario";
+
+            const div =
+                document.createElement("div");
+
+            div.className =
+                `d-flex justify-content-${
+                    esUsuario ? "end" : "start"
+                }`;
+
+            div.innerHTML =
+                `<div class="
+            px-3 py-2
+            rounded-3
+            ${
+                    esUsuario
+                        ? "bg-primary text-white"
+                        : "bg-light text-dark"
+                }"
+            style="
+                max-width:75%;
+                font-size:13px;
+            ">
+            ${texto}
+        </div>`;
+
             contenedor.appendChild(div);
-            contenedor.scrollTop = contenedor.scrollHeight;
+
+            contenedor.scrollTop =
+                contenedor.scrollHeight;
+
         }
 
+
+        /* ENVIAR */
+
         function enviarMensaje() {
-            const input = document.getElementById("input-mensaje");
-            const texto = input.value.trim();
+
+            const input =
+                document.getElementById("input-mensaje");
+
+            const texto =
+                input.value.trim();
+
             if (!texto) return;
-            agregarMensaje(texto, "usuario");
+
+            if (!socket ||
+                socket.readyState !== 1) {
+
+                console.log(
+                    "Socket no listo"
+                );
+
+                return;
+
+            }
+
+            agregarMensaje(
+                texto,
+                "usuario"
+            );
+
+            socket.send(texto);
+
             input.value = "";
-            // Aquí enviarás por WebSocket
+
         }
+
     </script>
 
 </th:block>

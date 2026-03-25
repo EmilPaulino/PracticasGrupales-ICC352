@@ -60,6 +60,12 @@
                 </a>
               </li>
 
+              <li th:if="${user.administrator or user.autor}">
+                <a class="dropdown-item" th:href="@{/chats}">
+                  Chats Abiertos
+                </a>
+              </li>
+
               <li>
                 <a class="dropdown-item" th:href="@{/logout}">
                   Cerrar Sesión

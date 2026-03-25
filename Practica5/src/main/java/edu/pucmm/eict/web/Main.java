@@ -3,43 +3,28 @@ package edu.pucmm.eict.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import edu.pucmm.eict.web.contoladores.ArticuloController;
+import edu.pucmm.eict.web.contoladores.ChatController;
 import edu.pucmm.eict.web.contoladores.LoginController;
 import edu.pucmm.eict.web.contoladores.UsuarioController;
 import edu.pucmm.eict.web.entidades.Articulo;
+import edu.pucmm.eict.web.entidades.Conversacion;
 import edu.pucmm.eict.web.entidades.Usuario;
-import edu.pucmm.eict.web.servicios.ArticuloService;
-import edu.pucmm.eict.web.servicios.BootStrapServices;
-import edu.pucmm.eict.web.servicios.EtiquetaService;
-import edu.pucmm.eict.web.servicios.UsuarioService;
+import edu.pucmm.eict.web.servicios.*;
 import edu.pucmm.eict.web.util.EncryptUtil;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.json.JavalinJackson;
 import io.javalin.rendering.template.JavalinThymeleaf;
+import org.eclipse.jetty.websocket.api.Session;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Main {
-    private static int parsePage(Context ctx) {
-        String pageParam = ctx.queryParam("page");
-        if (pageParam == null) return 0;
-        try {
-            return Integer.parseInt(pageParam);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
-    }
-
-    private static void setAtributosComunes(Context ctx, List<?> articulos, long total, int page, EtiquetaService etiquetaService) {
-        int totalPaginas = (int) Math.ceil(total / 5.0);
-        ctx.attribute("articulos", articulos);
-        ctx.attribute("etiquetas", etiquetaService.findAll());
-        ctx.attribute("page", page);
-        ctx.attribute("totalPaginas", totalPaginas);
-    }
-
     public static void main(String[] args) {
         var app = Javalin.create(config -> {
             //Archivos estáticos
@@ -61,6 +46,57 @@ public class Main {
 
         BootStrapServices.getInstancia().init();
 
+        ChatService chatService = ChatService.getInstancia();
+        ChatController chatController = new ChatController();
+        app.get("/chats", chatController::listarChats);
+        app.get("/chat/{id}", chatController::verChat);
+        app.get("/chat/cerrar/{id}", chatController::cerrarChat);
+
+        app.ws("/chat-usuario", ws -> {
+            ws.onConnect(ctx -> {
+                ctx.session.setIdleTimeout(Duration.ofMinutes(5));
+                Usuario usuario = ctx.sessionAttribute("user");
+                String nombre = ctx.queryParam("nombre");
+                if (nombre == null || nombre.isBlank()) {
+                    nombre = "Invitado";
+                }
+
+                Conversacion conv = chatService.crearConversacion(nombre, "/img/user-default.png", usuario, ctx.session);
+                ctx.attribute("chatId", conv.getId());
+                ctx.send(conv.getId());
+            });
+
+            ws.onMessage(ctx -> {
+                String id = ctx.attribute("chatId");
+                if (id == null) return;
+                chatService.enviarMensajeUsuario(id, ctx.message());
+            });
+
+            ws.onClose(ctx -> {
+                System.out.println("Usuario desconectado");
+            });
+        });
+
+        app.ws("/chat-admin", ws -> {
+            ws.onConnect(ctx -> {
+                ctx.session.setIdleTimeout(Duration.ofMinutes(5));
+                String id = ctx.queryParam("id");
+                chatService.conectarAdmin(id, ctx.session);
+
+            });
+
+            ws.onMessage(ctx -> {
+                String id = ctx.queryParam("id");
+                chatService.enviarMensajeAdmin(id, ctx.message());
+            });
+
+            ws.onClose(ctx -> {
+                String id = ctx.queryParam("id");
+                chatService.desconectarAdmin(id);
+            });
+
+        });
+
         //Endpoint para la /, es decir, index
         app.get("/", ctx -> {
             int page = parsePage(ctx);
@@ -77,11 +113,7 @@ public class Main {
             ArticuloService articuloService = ArticuloService.getInstancia();
             EtiquetaService etiquetaService = EtiquetaService.getInstancia();
 
-            setAtributosComunes(ctx,
-                    articuloService.listarPorEtiquetaPaginado(nombre, page),
-                    articuloService.contarPorEtiqueta(nombre),
-                    page,
-                    etiquetaService);
+            setAtributosComunes(ctx, articuloService.listarPorEtiquetaPaginado(nombre, page), articuloService.contarPorEtiqueta(nombre), page, etiquetaService);
 
             ctx.attribute("etiquetaSeleccionada", nombre);
             ctx.render("templates/index.html");
@@ -95,11 +127,7 @@ public class Main {
             long total = articuloService.contarArticulos();
             int totalPaginas = (int) Math.ceil(total / 5.0);
 
-            ctx.json(Map.of(
-                    "articulos",    articuloService.listarPaginado(page),
-                    "page",         page,
-                    "totalPaginas", totalPaginas
-            ));
+            ctx.json(Map.of("articulos", articuloService.listarPaginado(page), "page", page, "totalPaginas", totalPaginas));
         });
 
         app.get("/api/etiqueta/{nombre}", ctx -> {
@@ -110,12 +138,7 @@ public class Main {
             long total = articuloService.contarPorEtiqueta(nombre);
             int totalPaginas = (int) Math.ceil(total / 5.0);
 
-            ctx.json(Map.of(
-                    "articulos",    articuloService.listarPorEtiquetaPaginado(nombre, page),
-                    "page",         page,
-                    "totalPaginas", totalPaginas,
-                    "etiqueta",     nombre
-            ));
+            ctx.json(Map.of("articulos", articuloService.listarPorEtiquetaPaginado(nombre, page), "page", page, "totalPaginas", totalPaginas, "etiqueta", nombre));
         });
 
         //Endpoints para Login
@@ -277,4 +300,23 @@ public class Main {
             return;
         }
     }
+
+    private static int parsePage(Context ctx) {
+        String pageParam = ctx.queryParam("page");
+        if (pageParam == null) return 0;
+        try {
+            return Integer.parseInt(pageParam);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private static void setAtributosComunes(Context ctx, List<?> articulos, long total, int page, EtiquetaService etiquetaService) {
+        int totalPaginas = (int) Math.ceil(total / 5.0);
+        ctx.attribute("articulos", articulos);
+        ctx.attribute("etiquetas", etiquetaService.findAll());
+        ctx.attribute("page", page);
+        ctx.attribute("totalPaginas", totalPaginas);
+    }
+
 }

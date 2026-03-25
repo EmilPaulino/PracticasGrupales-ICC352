@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es" data-bs-theme="auto"
+      xmlns:th="http://www.thymeleaf.org" class="h-100">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Chats activos</title>
+    <link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="/estilos/estilosNavbar.css" rel="stylesheet"/>
+    <link href="/estilos/estilosChats.css" rel="stylesheet"/>
+
+</head>
+
+<body class="bg-white">
+
+<div class="container">
+    <div th:replace="~{/templates/fragmentos/navbar.html :: navbar}">
+    </div>
+</div>
+
+<main class="container mb-4">
+
+    <div class="mt-4 p-3 mb-4 rounded bg-white shadow-sm border">
+        <h2 class="mb-0 fw-bold d-flex align-items-center gap-2">
+            <i class="bi bi-chat-dots text-primary"></i>
+            Chats activos
+            <span class="badge rounded-pill bg-primary fs-6"
+                  th:text="${#lists.size(conversaciones)}">0</span>
+        </h2>
+    </div>
+
+    <div th:if="${#lists.isEmpty(conversaciones)}"
+         class="alert alert-info shadow-sm d-flex align-items-center gap-2 border-0">
+        <i class="bi bi-info-circle-fill"></i>
+        No hay conversaciones activas en este momento.
+    </div>
+
+    <div th:unless="${#lists.isEmpty(conversaciones)}" class="card border shadow-sm overflow-hidden">
+        <div class="list-group list-group-flush">
+
+            <div th:each="conv : ${conversaciones}"
+                 class="list-group-item list-group-item-action p-3 chat-card">
+
+                <div class="row align-items-center g-3">
+
+                    <div class="col-auto position-relative">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white avatar-circle"
+                             th:text="${#strings.substring(conv.nombreUsuario,0,1).toUpperCase()}">
+                        </div>
+                        <span th:if="${conv.adminConectado}"
+                              class="position-absolute bottom-0 end-0 p-2 bg-success border border-2 border-white rounded-circle">
+                        </span>
+                    </div>
+
+                    <div class="col">
+                        <h5 class="mb-0 fw-semibold text-dark" th:text="${conv.nombreUsuario}">Usuario</h5>
+                        <div class="d-flex gap-3 align-items-center small text-muted">
+                            <span><i class="bi bi-chat-left-text me-1"></i> <span
+                                    th:text="${#lists.size(conv.mensajes)}">0</span> mensajes</span>
+                        </div>
+                    </div>
+
+                    <div class="col-auto" th:if="${conv.adminConectado}">
+                        <span class="badge text-bg-success-subtle text-success border border-success-subtle">
+                            Atendiendo
+                        </span>
+                    </div>
+
+                    <div class="col-12 col-md-auto">
+                        <div class="d-flex gap-2 text-end justify-content-end">
+                            <a th:href="@{/chat/{id}(id=${conv.id})}"
+                               class="btn btn-sm btn-primary px-3 shadow-sm">
+                                Atender
+                            </a>
+                            <a th:href="@{/chat/cerrar/{id}(id=${conv.id})}"
+                               class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('¿Cerrar este chat?')">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</main>
+
+<footer class="py-5 text-center text-body-secondary bg-body-tertiary border-top">
+    <p>
+        <b>Integrantes:</b>
+        Emil Paulino & Erwin Martinez
+    </p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
