@@ -1,0 +1,18 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: javalin-app
+    ports:
+      - "7000:7000"
+    environment:
+      - DB_URL=jdbc:h2:file:/app/data/mydb
+      - DB_USER=sa
+      - DB_PASSWORD=
+    volumes:
+      - h2-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  h2-data:
