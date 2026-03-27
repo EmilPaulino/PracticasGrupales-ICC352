@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.gradleup.shadow' version '9.3.0'
+}
+
+group = 'edu.pucmm.eict'
+version = '1.0-SNAPSHOT'
+
+application{
+    mainClass = 'main.Main';
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    //Dependencia de Javalin
+    implementation("io.javalin:javalin:7.1.0")
+    //Manejo de logs
+    implementation("org.slf4j:slf4j-simple:2.0.17")
+    //Motor de plantillas
+    implementation 'org.thymeleaf:thymeleaf:3.1.3.RELEASE'
+    //Renderizado
+    implementation "io.javalin:javalin-rendering-thymeleaf:7.0.1"
+
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'main.Main'
+    }
+}
+
+shadowJar{
+    archiveBaseName.set("app")
+    archiveClassifier.set('')
+    archiveVersion.set('')
+}
+
+test {
+    useJUnitPlatform()
+}
