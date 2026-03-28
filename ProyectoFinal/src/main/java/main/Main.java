@@ -8,8 +8,7 @@ public class Main {
     public static void main(String[] args) {
         var app = Javalin.create(config -> {
 
-            new ApiController(config)
-                    .aplicarRutas();
+            new ApiController(config).aplicarRutas();
 
         }).start(7000);
     }

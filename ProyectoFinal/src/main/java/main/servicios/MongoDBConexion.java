@@ -52,11 +52,4 @@ public class MongoDBConexion {
         mongoClient = null;
     }
 
-
-    /*
-    * Variables globales para windows
-    * setx URL_MONGO "mongodb+srv://admin:qXGJs7FK8nxMeBQs@oppucmm.uzm0fbr.mongodb.net/?appName=OPPUCMM"
-    * setx DB_NOMBRE "EncuestaDB"
-    * */
-
 }
