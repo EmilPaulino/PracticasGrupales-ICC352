@@ -1,15 +1,57 @@
 package main;
 
 import io.javalin.Javalin;
+import io.javalin.http.ForbiddenResponse;
+import io.javalin.http.UnauthorizedResponse;
 import main.controladores.AuthController;
 import main.controladores.FormularioController;
 import main.controladores.UsuarioController;
+import main.util.JwtUtil;
 
 public class Main {
 
     public static void main(String[] args) {
 
         Javalin.create(config -> {
+
+            //Filtro JWT
+            config.routes.before("/api/*", ctx -> {
+
+                if (ctx.path().equals("/api/login"))
+                    return;
+
+                String header = ctx.header("Authorization");
+
+                if (header == null || !header.startsWith("Bearer ")) {
+
+                    throw new UnauthorizedResponse(
+                            "Token requerido"
+                    );
+                }
+
+                String token =
+                        header.replace("Bearer ", "");
+
+                try {
+
+                    var claims =
+                            JwtUtil.validarToken(token);
+
+                    ctx.attribute(
+                            "username",
+                            claims.get("username")
+                    );
+
+                }
+                catch (Exception e) {
+
+                    throw new ForbiddenResponse(
+                            "Token inválido"
+                    );
+                }
+
+            });
+
 
             // AUTH
             config.routes.post("/api/login", AuthController::login);
