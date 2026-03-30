@@ -17,8 +17,7 @@ public class FormularioServices {
     }
 
     public static FormularioServices getInstancia() {
-        if (instancia == null)
-            instancia = new FormularioServices();
+        if (instancia == null) instancia = new FormularioServices();
         return instancia;
     }
 
@@ -35,16 +34,13 @@ public class FormularioServices {
 
     // Buscar por id
     public Formulario getFormularioPorId(String id) {
-        return ds.find(Formulario.class)
-                .filter(Filters.eq("_id", new ObjectId(id)))
-                .first();
+        if (!ObjectId.isValid(id)) return null;
+        return ds.find(Formulario.class).filter(Filters.eq("_id", new ObjectId(id))).first();
     }
 
     // Listar por username del encuestador (requerimiento 16.1)
     public List<Formulario> listarFormulariosPorUsuario(String username) {
-        return ds.find(Formulario.class)
-                .filter(Filters.eq("usuario.username", username))
-                .iterator().toList();
+        return ds.find(Formulario.class).filter(Filters.eq("usuario.username", username)).iterator().toList();
     }
 
     // Actualizar
@@ -56,7 +52,9 @@ public class FormularioServices {
     // Eliminar — devuelve false si no existe
     public boolean eliminarFormulario(String id) {
         Formulario formulario = getFormularioPorId(id);
-        if (formulario == null) return false;
+        if (formulario == null) {
+            return false;
+        }
         ds.delete(formulario);
         return true;
     }

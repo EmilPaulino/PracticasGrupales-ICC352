@@ -5,8 +5,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Date;
 
 public class JwtUtil {
@@ -15,10 +13,12 @@ public class JwtUtil {
 
     private static final SecretKey KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
 
+    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24; //24 Horas
+
     public static String generarToken(String username) {
-        LocalDateTime tiempo = LocalDateTime.now().plusHours(2);
-        Date expiracion = Date.from(tiempo.toInstant(ZoneOffset.ofHours(-4)));
-        return Jwts.builder().issuer("PW").subject("Login").expiration(expiracion).claim("username", username).signWith(KEY).compact();
+        Date now = new Date();
+        Date expiracion = new Date(now.getTime() + EXPIRATION_TIME);
+        return Jwts.builder().issuer("PW").subject("Login").issuedAt(now).expiration(expiracion).claim("username", username).signWith(KEY).compact();
     }
 
     public static Claims validarToken(String token) {

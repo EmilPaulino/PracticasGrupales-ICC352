@@ -1,6 +1,8 @@
 package main.controladores;
 
 import io.javalin.http.Context;
+import io.javalin.http.BadRequestResponse;
+
 import main.entidades.Usuario;
 import main.servicios.UsuarioServices;
 import main.util.JwtUtil;
@@ -14,8 +16,13 @@ public class AuthController {
 
     public static void login(Context ctx) {
         Usuario datos = ctx.bodyAsClass(Usuario.class);
+        if (datos == null || datos.getUsername() == null || datos.getPassword() == null){
+            throw new BadRequestResponse("Username y password requeridos");
+        }
+
         Usuario usuario = usuarioServices.getUsuarioByUsername(datos.getUsername());
-        if (usuario == null || !usuario.getPassword().equals(datos.getPassword())) {
+
+        if (usuario == null || !datos.getPassword().equals(usuario.getPassword())) {
             ctx.status(401);
             ctx.json(RespuestaDTO.error("Credenciales inválidas"));
             return;
@@ -30,7 +37,7 @@ public class AuthController {
         ctx.json(RespuestaDTO.ok("Logout exitoso"));
     }
 
-    // USUARIO ACTUAL DESDE TOKEN
+    // 👤 USUARIO ACTUAL
 
     public static void usuarioActual(Context ctx) {
 

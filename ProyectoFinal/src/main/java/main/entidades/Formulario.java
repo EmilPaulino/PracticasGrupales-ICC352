@@ -4,6 +4,7 @@ import dev.morphia.annotations.*;
 import org.bson.types.ObjectId;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity("formularios")
 public class Formulario {
@@ -20,6 +21,7 @@ public class Formulario {
     @Property("nivelEscolar")
     private NivelEscolar nivelEscolar;
 
+    @Property("usuario")
     private UsuarioEmbebido usuario;
 
     private Ubicacion ubicacion;
@@ -28,7 +30,7 @@ public class Formulario {
     private String fotoBase64;
 
     @Property("fechaRegistro")
-    private LocalDateTime fechaRegistro;
+    private java.util.Date fechaRegistro;
 
     public Formulario() {
     }
@@ -41,7 +43,7 @@ public class Formulario {
         this.usuario = usuario;
         this.ubicacion = ubicacion;
         this.fotoBase64 = fotoBase64;
-        this.fechaRegistro = LocalDateTime.now();
+        this.fechaRegistro = new java.util.Date();
     }
 
     public ObjectId getId() {
@@ -100,11 +102,11 @@ public class Formulario {
         this.fotoBase64 = fotoBase64;
     }
 
-    public LocalDateTime getFechaRegistro() {
+    public Date getFechaRegistro() {
         return fechaRegistro;
     }
 
-    public void setFechaRegistro(LocalDateTime f) {
+    public void setFechaRegistro(Date f) {
         this.fechaRegistro = f;
     }
 }
