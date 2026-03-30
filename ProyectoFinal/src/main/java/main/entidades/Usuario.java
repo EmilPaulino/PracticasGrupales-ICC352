@@ -1,13 +1,24 @@
 package main.entidades;
 
+import dev.morphia.annotations.*;
+import org.bson.types.ObjectId;
+
+@Entity("usuarios")
 public class Usuario {
-    private String id;
+
+    @Id
+    private ObjectId id;
+
+    @Property("username")
     private String username;
-    private String password;
+
+    @Property("password")
+    private String password;   // almacenar con hash (BCrypt)
+
+    @Property("rol")
     private Rol rol;
 
     public Usuario() {
-
     }
 
     public Usuario(String username, String password, Rol rol) {
@@ -16,11 +27,11 @@ public class Usuario {
         this.rol = rol;
     }
 
-    public String getId() {
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 
@@ -28,16 +39,16 @@ public class Usuario {
         return username;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUsername(String u) {
+        this.username = u;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPassword(String p) {
+        this.password = p;
     }
 
     public Rol getRol() {

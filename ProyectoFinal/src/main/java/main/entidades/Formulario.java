@@ -1,23 +1,40 @@
 package main.entidades;
 
+import dev.morphia.annotations.*;
+import org.bson.types.ObjectId;
+
 import java.time.LocalDateTime;
 
+@Entity("formularios")
 public class Formulario {
 
-    private String id;
+    @Id
+    private ObjectId id;
+
+    @Property("nombre")
     private String nombre;
+
+    @Property("sector")
     private String sector;
+
+    @Property("nivelEscolar")
     private NivelEscolar nivelEscolar;
-    private Usuario usuario;
+
+    private UsuarioEmbebido usuario;
+
     private Ubicacion ubicacion;
+
+    @Property("fotoBase64")
     private String fotoBase64;
+
+    @Property("fechaRegistro")
     private LocalDateTime fechaRegistro;
 
-    public Formulario(){
-
+    public Formulario() {
     }
 
-    public Formulario(String nombre, String sector, NivelEscolar nivelEscolar, Usuario usuario, Ubicacion ubicacion, String fotoBase64){
+    public Formulario(String nombre, String sector, NivelEscolar nivelEscolar,
+                      UsuarioEmbebido usuario, Ubicacion ubicacion, String fotoBase64) {
         this.nombre = nombre;
         this.sector = sector;
         this.nivelEscolar = nivelEscolar;
@@ -27,11 +44,11 @@ public class Formulario {
         this.fechaRegistro = LocalDateTime.now();
     }
 
-    public String getId() {
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 
@@ -55,15 +72,15 @@ public class Formulario {
         return nivelEscolar;
     }
 
-    public void setNivelEscolar(NivelEscolar nivelEscolar) {
-        this.nivelEscolar = nivelEscolar;
+    public void setNivelEscolar(NivelEscolar n) {
+        this.nivelEscolar = n;
     }
 
-    public Usuario getUsuario() {
+    public UsuarioEmbebido getUsuario() {
         return usuario;
     }
 
-    public void setUsuario(Usuario usuario) {
+    public void setUsuario(UsuarioEmbebido usuario) {
         this.usuario = usuario;
     }
 
@@ -87,7 +104,7 @@ public class Formulario {
         return fechaRegistro;
     }
 
-    public void setFechaRegistro(LocalDateTime fechaRegistro) {
-        this.fechaRegistro = fechaRegistro;
+    public void setFechaRegistro(LocalDateTime f) {
+        this.fechaRegistro = f;
     }
 }

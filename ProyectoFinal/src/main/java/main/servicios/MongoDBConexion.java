@@ -2,54 +2,30 @@ package main.servicios;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
+import dev.morphia.Datastore;
+import dev.morphia.Morphia;
 
 public class MongoDBConexion {
 
-    private static MongoDBConexion instance;
-    private MongoClient mongoClient;
-    private String DB_NOMBRE;
+    private static MongoDBConexion instancia;
+    private final Datastore datastore;
 
-    private MongoDBConexion(){
+    private MongoDBConexion() {
+        var env    = new ProcessBuilder().environment();
+        String url = env.get("URL_MONGO");
+        String db  = env.get("DB_NOMBRE");
 
+        MongoClient client = MongoClients.create(url);
+        datastore = Morphia.createDatastore(client, db);
     }
 
-    public static MongoDBConexion getInstance(){
-        if(instance == null){
-            instance = new MongoDBConexion();
-        }
-        return instance;
+    public static MongoDBConexion getInstance() {
+        if (instancia == null)
+            instancia = new MongoDBConexion();
+        return instancia;
     }
 
-    /**
-     *
-     * @return
-     */
-    public MongoDatabase getBaseDatos(){
-
-        if(mongoClient==null) {
-            ProcessBuilder processBuilder = new ProcessBuilder();
-            String URL_MONGODB = processBuilder.environment().get("URL_MONGO");
-            DB_NOMBRE = processBuilder.environment().get("DB_NOMBRE");
-            mongoClient = MongoClients.create(URL_MONGODB);
-        }
-
-        //Retomando la conexión
-        MongoDatabase database = mongoClient.getDatabase(DB_NOMBRE);
-        database.runCommand(new Document("ping", 1));
-        System.out.println("Pinged your deployment. You successfully connected to MongoDB!");
-
-        //
-        return database;
+    public Datastore getDatastore() {
+        return datastore;
     }
-
-    /**
-     *
-     */
-    public void cerrar(){
-        mongoClient.close();
-        mongoClient = null;
-    }
-
 }
