@@ -4,6 +4,7 @@ import io.javalin.Javalin;
 import io.javalin.http.ForbiddenResponse;
 import io.javalin.http.UnauthorizedResponse;
 
+import io.javalin.http.staticfiles.Location;
 import main.controladores.AuthController;
 import main.controladores.FormularioController;
 import main.controladores.UsuarioController;
@@ -14,6 +15,12 @@ public class Main {
     public static void main(String[] args) {
 
         Javalin.create(config -> {
+            config.staticFiles.add(staticFileConfig -> {
+                staticFileConfig.hostedPath = "/";
+                staticFileConfig.directory = "/public";
+                staticFileConfig.location = Location.CLASSPATH;
+                staticFileConfig.aliasCheck=null;
+            });
 
             config.routes.before("/api/*", ctx -> {
 

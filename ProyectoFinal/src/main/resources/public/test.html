@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Prueba Sync</title>
+
+    <script src="js/formulario-model.js"></script>
+    <script src="js/local-storage.js"></script>
+
+</head>
+
+<body>
+
+<h2>Prueba sincronización</h2>
+
+<button onclick="probarGuardar()">
+    Guardar formulario local
+</button>
+
+<br><br>
+
+<button onclick="sincronizarFormularios()">
+    Enviar al servidor
+</button>
+
+<script>
+
+    function probarGuardar() {
+
+        let f = crearFormularioEjemplo();
+
+        guardarFormularioLocal(f);
+
+        console.log("Formulario guardado local");
+
+    }
+
+
+    function sincronizarFormularios() {
+
+        let formularios =
+            obtenerFormulariosPendientes();
+
+        let socket =
+            new WebSocket(
+                "ws://localhost:7000/sync"
+            );
+
+        socket.onopen = () => {
+
+            console.log(
+                "Conectado al WebSocket"
+            );
+
+            formularios.forEach(f => {
+
+                socket.send(
+                    JSON.stringify(f)
+                );
+
+                console.log(
+                    "Formulario enviado"
+                );
+
+            });
+
+        };
+
+        socket.onmessage = (msg) => {
+
+            console.log(
+                "Respuesta servidor:",
+                msg.data
+            );
+
+            if (msg.data === "OK") {
+
+                localStorage.removeItem(
+                    "formularios"
+                );
+
+                console.log(
+                    "LocalStorage limpiado"
+                );
+
+            }
+
+        };
+
+    }
+
+</script>
+
+</body>
+
+</html>
