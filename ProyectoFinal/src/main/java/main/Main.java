@@ -54,6 +54,35 @@ public class Main {
             config.routes.put("/api/formularios", FormularioController::actualizarFormulario);
             config.routes.delete("/api/formularios/{id}", FormularioController::eliminarFormulario);
 
+            // WebSocket para sincronización
+            config.routes.ws("/sync", ws -> {
+
+                ws.onConnect(ctx -> {
+                    System.out.println("Cliente conectado a /sync");
+                });
+
+                ws.onMessage(ctx -> {
+                    String json = ctx.message();
+                    System.out.println("Mensaje recibido:");
+                    System.out.println(json);
+
+                    try {
+                        FormularioController.procesarSync(json);
+                        System.out.println("Formulario sincronizado");
+                        ctx.send("OK");
+                    } catch (Exception e) {
+                        System.out.println("Error en sincronización");
+                        e.printStackTrace();
+                        ctx.send("ERROR");
+                    }
+                });
+
+                ws.onClose(ctx -> {
+                    System.out.println("Cliente desconectado");
+                });
+
+            });
+
         }).start(7000);
     }
 }

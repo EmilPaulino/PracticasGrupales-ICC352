@@ -1,5 +1,6 @@
 package main.controladores;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.UnauthorizedResponse;
@@ -15,6 +16,7 @@ import java.util.Date;
 public class FormularioController {
 
     private static final FormularioServices formularioServices = FormularioServices.getInstancia();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     public static void listarFormularios(Context ctx) {
         ctx.json(RespuestaDTO.ok(formularioServices.listarFormularios()));
@@ -92,5 +94,18 @@ public class FormularioController {
             return;
         }
         ctx.json(RespuestaDTO.ok("Formulario eliminado correctamente"));
+    }
+
+
+    public static void procesarSync(String json) {
+        try {
+            Formulario formulario = mapper.readValue(json, Formulario.class);
+            validarFormulario(formulario);
+            formulario.setFechaRegistro(new Date());
+            FormularioServices.getInstancia().crearFormulario(formulario);
+        } catch (Exception e) {
+            throw new RuntimeException("Error procesando sincronización", e);
+        }
+
     }
 }
