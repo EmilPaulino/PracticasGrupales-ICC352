@@ -37,8 +37,6 @@ public class AuthController {
         ctx.json(RespuestaDTO.ok("Logout exitoso"));
     }
 
-    // 👤 USUARIO ACTUAL
-
     public static void usuarioActual(Context ctx) {
 
         String username = ctx.attribute("username");

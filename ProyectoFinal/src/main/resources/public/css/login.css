@@ -1,0 +1,46 @@
+.bg-pucmm{
+    background:#1f66d1; /* usa el mismo color exacto */
+}
+
+body{
+    background:#f0f2f5;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+.login-card{
+    max-width:420px;
+    width:100%;
+    margin:auto;
+    border-radius:12px;
+    box-shadow:0 4px 24px rgba(0,0,0,.10);
+    overflow:hidden;
+}
+
+.login-header {
+    background: #0d6efd;
+    padding: 24px;
+    color: #fff;
+    border-top-left-radius:12px;
+    border-top-right-radius:12px;
+}
+
+.login-body {
+    padding: 24px;
+}
+
+@media (max-width: 576px) {
+    body {
+        align-items: flex-start;
+        padding-top: 24px;
+    }
+
+    .login-header {
+        padding: 20px;
+    }
+
+    .login-body {
+        padding: 20px;
+    }
+}

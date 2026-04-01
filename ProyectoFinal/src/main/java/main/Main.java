@@ -5,6 +5,7 @@ import io.javalin.http.ForbiddenResponse;
 import io.javalin.http.UnauthorizedResponse;
 
 import io.javalin.http.staticfiles.Location;
+import io.javalin.rendering.template.JavalinThymeleaf;
 import main.controladores.AuthController;
 import main.controladores.FormularioController;
 import main.controladores.UsuarioController;
@@ -15,6 +16,8 @@ public class Main {
     public static void main(String[] args) {
 
         Javalin.create(config -> {
+            config.fileRenderer(new JavalinThymeleaf());
+
             config.staticFiles.add(staticFileConfig -> {
                 staticFileConfig.hostedPath = "/";
                 staticFileConfig.directory = "/public";
@@ -44,6 +47,9 @@ public class Main {
             config.routes.post("/api/login", AuthController::login);
             config.routes.post("/api/logout", AuthController::logout);
             config.routes.get("/api/usuario/actual", AuthController::usuarioActual);
+            config.routes.get("/login", ctx -> {
+                ctx.render("/templates/login/login.html");
+            });
 
             // Usuarios
             config.routes.get("/api/usuarios", UsuarioController::listarUsuarios);
@@ -60,6 +66,8 @@ public class Main {
             config.routes.post("/api/formularios", FormularioController::crearFormulario);
             config.routes.put("/api/formularios", FormularioController::actualizarFormulario);
             config.routes.delete("/api/formularios/{id}", FormularioController::eliminarFormulario);
+
+
 
             // WebSocket para sincronización
             config.routes.ws("/sync", ws -> {
