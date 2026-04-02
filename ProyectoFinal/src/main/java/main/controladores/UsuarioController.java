@@ -28,9 +28,10 @@ public class UsuarioController {
     }
 
     public static void getUsuarioByUsername(Context ctx) {
-        String username = ctx.attribute("username");
+        validarAdmin(ctx);
+        String username = ctx.pathParam("username"); // ← ESTO ERA EL ERROR
         Usuario usuario = usuarioServices.getUsuarioByUsername(username);
-        if (usuario == null){
+        if (usuario == null) {
             throw new NotFoundResponse("Usuario no encontrado");
         }
         ctx.json(RespuestaDTO.ok(usuario));
@@ -39,7 +40,7 @@ public class UsuarioController {
     public static void crearUsuario(Context ctx) {
         validarAdmin(ctx);
         Usuario creado = usuarioServices.crearUsuario(ctx.bodyAsClass(Usuario.class));
-        if (creado == null){
+        if (creado == null) {
             throw new ForbiddenResponse("El usuario ya existe");
         }
         ctx.status(201).json(RespuestaDTO.ok(creado));
@@ -47,7 +48,15 @@ public class UsuarioController {
 
     public static void actualizarUsuario(Context ctx) {
         validarAdmin(ctx);
-        Usuario actualizado = usuarioServices.actualizarUsuario(ctx.bodyAsClass(Usuario.class));
+        Usuario usuario = ctx.bodyAsClass(Usuario.class);
+        String idString = ctx.bodyAsClass(java.util.Map.class).get("id").toString();
+        if (idString != null) {
+            usuario.setId(new org.bson.types.ObjectId(idString));
+        }
+        Usuario actualizado = usuarioServices.actualizarUsuario(usuario);
+        if (actualizado == null) {
+            throw new NotFoundResponse("No se pudo actualizar usuario");
+        }
         ctx.json(RespuestaDTO.ok(actualizado));
     }
 

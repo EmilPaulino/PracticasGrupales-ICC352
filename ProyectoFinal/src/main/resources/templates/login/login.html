@@ -9,18 +9,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
     <link th:href="@{/css/login.css}" rel="stylesheet"/>
+    <link th:href="@{/css/layout.css}" rel="stylesheet"/>
 
 </head>
 
 <body>
-
 <!-- NAVBAR -->
-
-<div th:replace="~{templates/fragments/navbar.html :: navbar(false)}"></div>
-
+<div th:replace="~{templates/fragments/navbar.html :: navbar}"></div>
 
 <!-- LOADING -->
-
 <div id="loadingScreen" class="d-flex flex-column justify-content-center align-items-center vh-100">
     <div class="spinner-border text-primary mb-3"></div>
     <div class="text-secondary">Verificando sesión...</div>
@@ -96,20 +93,135 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    const lc=document.getElementById('loginCard'),ls=document.getElementById('loadingScreen'),f=document.getElementById('loginForm'),u=document.getElementById('username'),p=document.getElementById('password'),b=document.getElementById('loginBtn'),t=document.getElementById('btnText'),s=document.getElementById('btnSpinner'),ea=document.getElementById('errorAlert'),em=document.getElementById('errorMsg'),oa=document.getElementById('offlineAlert'),tp=document.getElementById('togglePw'),ei=document.getElementById('eyeIcon');
+    const lc=document.getElementById('loginCard');
+    const ls=document.getElementById('loadingScreen');
+    const f=document.getElementById('loginForm');
+    const u=document.getElementById('username');
+    const p=document.getElementById('password');
 
-    (async()=>{const tk=localStorage.getItem('jwt_token');if(tk){try{const r=await fetch('/api/usuario/actual',{headers:{'Authorization':'Bearer '+tk}});if(r.ok){window.location.href='/';return;}else localStorage.clear();}catch{localStorage.clear();}}ls.classList.add('d-none');lc.classList.remove('d-none');})();
+    const b=document.getElementById('loginBtn');
+    const t=document.getElementById('btnText');
+    const s=document.getElementById('btnSpinner');
 
-    function net(){oa.classList.toggle('d-none',navigator.onLine);}
-    window.addEventListener('online',net);window.addEventListener('offline',net);net();
+    const ea=document.getElementById('errorAlert');
+    const em=document.getElementById('errorMsg');
 
-    tp.addEventListener('click',()=>{const m=p.type==='password';p.type=m?'text':'password';ei.className=m?'bi bi-eye-slash':'bi bi-eye';});
+    const oa=document.getElementById('offlineAlert');
 
-    function load(st){b.disabled=st;s.classList.toggle('d-none',!st);t.textContent=st?'Ingresando...':'Ingresar';}
-    function err(m){em.textContent=m;ea.classList.remove('d-none');}
-    function hide(){ea.classList.add('d-none');}
+    const tp=document.getElementById('togglePw');
+    const ei=document.getElementById('eyeIcon');
 
-    f.addEventListener('submit',async e=>{e.preventDefault();hide();load(true);try{if(navigator.onLine){const res=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u.value.trim(),password:p.value})});const resp=await res.json();if(res.ok&&resp.exito&&resp.datos){const {token,usuario}=resp.datos;localStorage.setItem('jwt_token',token);localStorage.setItem('usuario',JSON.stringify(usuario));window.location.href='/';}else err(resp.mensaje||'Credenciales inválidas.');}else{const ug=localStorage.getItem('usuario'),tg=localStorage.getItem('jwt_token');if(ug&&tg)window.location.href='/';else err('Sin conexión y sin sesión guardada.');}}catch{const ug=localStorage.getItem('usuario');if(ug)window.location.href='/';else err('Error de conexión.');}finally{load(false);}});
+    (async()=>{
+        const tk = localStorage.getItem('jwt_token');
+        if(tk){
+            try{
+                const r=
+                    await fetch('/api/usuarios',
+                        {
+                            headers:{
+                                'Authorization': 'Bearer '+tk
+                            }
+                        }
+                    );
+
+                if(r.ok){
+                    window.location.href='/';
+                    return;
+                }
+                else{
+                    localStorage.clear();
+                }
+            }
+            catch{
+                localStorage.clear();
+            }
+        }
+
+        ls.classList.add('d-none');
+        lc.classList.remove('d-none');
+
+    })();
+
+    function net(){
+        oa.classList.toggle(
+            'd-none',
+            navigator.onLine
+        );
+    }
+
+    window.addEventListener('online',net);
+    window.addEventListener('offline',net);
+
+    net();
+
+    tp.addEventListener('click',()=>{
+        const m = p.type==='password';
+        p.type=m?'text':'password';
+        ei.className = m?'bi bi-eye-slash': 'bi bi-eye';
+    });
+
+    function load(st){
+        b.disabled=st;
+        s.classList.toggle('d-none', !st);
+        t.textContent = st?'Ingresando...':'Ingresar';
+    }
+
+    function err(m){
+        em.textContent=m;
+        ea.classList.remove('d-none');
+    }
+
+    function hide(){
+        ea.classList.add('d-none');
+    }
+
+    f.addEventListener('submit',
+        async e=>{
+            e.preventDefault();
+            hide();
+            load(true);
+            try{
+                const res=
+                    await fetch('/api/login',
+                        {
+                            method:'POST',
+                            headers:{'Content-Type':'application/json'},
+                            body:JSON.stringify({
+                                username:u.value.trim(),
+                                password:
+                                p.value
+                            })
+                        }
+                    );
+
+                const resp = await res.json();
+
+                if(res.ok && resp.exito && resp.datos){
+                    const {token, usuario} = resp.datos;
+
+                    localStorage.setItem('jwt_token', token);
+                    localStorage.setItem('usuario', JSON.stringify(usuario));
+
+                    if(usuario.rol === 'ADMIN'){
+                        window.location.href='/admin/panel';
+                    }else{
+                        window.location.href='/';
+                    }
+                }
+                else{
+                    err(resp.mensaje|| 'Credenciales inválidas.');
+                }
+
+            }
+            catch{
+                err('Error de conexión.');
+            }
+            finally{
+                load(false);
+            }
+
+        });
+
 </script>
 
 </body>

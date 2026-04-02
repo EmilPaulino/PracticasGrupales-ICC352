@@ -1,0 +1,65 @@
+<div th:fragment="sidebar"
+     id="sidebar">
+
+    <div class="text-uppercase text-muted px-3 pt-3 pb-1"
+         style="font-size:.68rem;font-weight:700;letter-spacing:.1em;">
+
+        Principal
+
+    </div>
+
+    <a th:href="@{/admin/panel}"
+       th:classappend="${activePage == 'dashboard'} ? ' active'"
+       class="sidebar-link">
+
+        <i class="bi bi-speedometer2"></i>
+        Panel Administrativo
+
+    </a>
+
+    <a th:href="@{/mapa}"
+       th:classappend="${activePage == 'mapa'} ? ' active'"
+       class="sidebar-link">
+
+        <i class="bi bi-map"></i>
+        Mapa de registros
+
+    </a>
+
+    <hr class="mx-3 my-2"/>
+
+    <div class="text-uppercase text-muted px-3 pb-1"
+         style="font-size:.68rem;font-weight:700;letter-spacing:.1em;">
+
+        Administración
+
+    </div>
+
+    <a th:href="@{/admin/usuarios}"
+       th:classappend="${activePage == 'usuarios'} ? ' active'"
+       class="sidebar-link">
+
+        <i class="bi bi-people"></i>
+        Gestión de Usuarios
+
+    </a>
+
+    <hr class="mx-3 my-2"/>
+
+    <div class="text-uppercase text-muted px-3 pb-1"
+         style="font-size:.68rem;font-weight:700;letter-spacing:.1em;">
+
+        Formularios
+
+    </div>
+
+    <a th:href="@{/admin/usuarios}"
+       th:classappend="${activePage == 'formularios'} ? ' active'"
+       class="sidebar-link">
+
+        <i class="bi bi-people"></i>
+        Formularios
+
+    </a>
+
+</div>

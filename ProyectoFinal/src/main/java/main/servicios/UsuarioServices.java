@@ -17,7 +17,7 @@ public class UsuarioServices {
     }
 
     public static UsuarioServices getInstancia() {
-        if (instancia == null){
+        if (instancia == null) {
             instancia = new UsuarioServices();
         }
         return instancia;
@@ -28,33 +28,39 @@ public class UsuarioServices {
     }
 
     public Usuario getUsuarioByUsername(String username) {
-        if (username == null || username.isBlank()){
+        if (username == null || username.isBlank()) {
             return null;
         }
         return ds.find(Usuario.class).filter(Filters.eq("username", username)).first();
     }
 
     public Usuario getUsuarioById(String id) {
-        if (!ObjectId.isValid(id)){
+
+        if (!ObjectId.isValid(id)) {
             return null;
         }
+
         return ds.find(Usuario.class).filter(Filters.eq("_id", new ObjectId(id))).first();
     }
 
     public Usuario crearUsuario(Usuario usuario) {
-        if (usuario == null){
+        if (usuario == null) {
             return null;
         }
 
-        if (usuario.getUsername() == null || usuario.getUsername().isBlank()){
+        if (usuario.getNombre() == null || usuario.getNombre().isBlank()) {
             return null;
         }
 
-        if (usuario.getPassword() == null || usuario.getPassword().isBlank()){
+        if (usuario.getUsername() == null || usuario.getUsername().isBlank()) {
             return null;
         }
 
-        if (getUsuarioByUsername(usuario.getUsername()) != null){
+        if (usuario.getPassword() == null || usuario.getPassword().isBlank()) {
+            return null;
+        }
+
+        if (getUsuarioByUsername(usuario.getUsername()) != null) {
             return null;
         }
 
@@ -64,24 +70,35 @@ public class UsuarioServices {
 
     public Usuario actualizarUsuario(Usuario usuario) {
 
-        if (usuario == null || usuario.getId() == null){
+        if (usuario == null || usuario.getId() == null) {
             return null;
         }
 
         Usuario existente = getUsuarioById(usuario.getId().toHexString());
 
-        if (existente == null){
+        if (existente == null) {
             return null;
         }
 
-        ds.save(usuario);
-        return usuario;
+        existente.setNombre(usuario.getNombre());
+
+        existente.setRol(usuario.getRol());
+
+        if (usuario.getPassword() != null && !usuario.getPassword().isBlank()) {
+
+            existente.setPassword(usuario.getPassword());
+
+        }
+
+        ds.save(existente);
+
+        return existente;
     }
 
     public boolean eliminarUsuario(String id) {
         Usuario usuario = getUsuarioById(id);
 
-        if (usuario == null){
+        if (usuario == null) {
             return false;
         }
 
