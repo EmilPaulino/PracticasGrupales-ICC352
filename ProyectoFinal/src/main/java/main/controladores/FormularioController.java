@@ -1,5 +1,6 @@
 package main.controladores;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
@@ -70,19 +71,23 @@ public class FormularioController {
     }
 
     public static void actualizarFormulario(Context ctx) {
-        String id = ctx.bodyAsClass(Formulario.class).getId().toString();
+        Formulario datos = ctx.bodyAsClass(Formulario.class); // ✔ solo una vez
+
+        String id = datos.getId().toString();
+
         Formulario existente = formularioServices.getFormularioPorId(id);
         if (existente == null) {
             ctx.status(404);
             ctx.json(RespuestaDTO.error("Formulario no encontrado"));
             return;
         }
-        Formulario datos = ctx.bodyAsClass(Formulario.class);
+
         existente.setNombre(datos.getNombre());
         existente.setSector(datos.getSector());
         existente.setNivelEscolar(datos.getNivelEscolar());
         existente.setUbicacion(datos.getUbicacion());
         existente.setFotoBase64(datos.getFotoBase64());
+
         Formulario actualizado = formularioServices.actualizarFormulario(existente);
         ctx.json(RespuestaDTO.ok(actualizado));
     }
@@ -99,13 +104,22 @@ public class FormularioController {
 
     public static void procesarSync(String json) {
         try {
-            Formulario formulario = mapper.readValue(json, Formulario.class);
+            JsonNode node = mapper.readTree(json);
+
+            String username = node.get("username").asText();
+
+            Formulario formulario = mapper.treeToValue(node, Formulario.class);
+
+            Usuario usuario = UsuarioServices.getInstancia().getUsuarioByUsername(username);
+            formulario.setUsuario(new UsuarioEmbebido(usuario));
+
             validarFormulario(formulario);
             formulario.setFechaRegistro(new Date());
+
             FormularioServices.getInstancia().crearFormulario(formulario);
+
         } catch (Exception e) {
             throw new RuntimeException("Error procesando sincronización", e);
         }
-
     }
 }

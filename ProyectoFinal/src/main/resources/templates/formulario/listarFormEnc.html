@@ -12,14 +12,48 @@
 
 <div th:replace="~{templates/fragments/navbar.html :: navbar}"></div>
 <div th:replace="~{templates/fragments/sidebar.html :: sidebar}"></div>  <!-- ✅ -->
-<div id="sidebarOverlay"></div>  <!-- ✅ -->
+<div id="sidebarOverlay"></div>
 
 <main class="main-content">
-    <!-- tu contenido aquí -->
+    <div class="container mt-4">
+        <h3>Formulario de Encuesta</h3>
+
+        <form id="formEncuesta">
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="nombre" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Sector</label>
+                <input type="text" class="form-control" id="sector" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Nivel Escolar</label>
+                <select id="nivelEscolar">
+                    <option value="BASICO">Básico</option>
+                    <option value="MEDIO">Medio</option>
+                    <option value="GRADO_UNIVERSITARIO">Grado Universitario</option>
+                    <option value="POSTGRADO">Postgrado</option>
+                    <option value="DOCTORADO">Doctorado</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Foto</label>
+                <video id="video" width="100%" autoplay></video>
+                <button type="button" class="btn btn-secondary mt-2" onclick="tomarFoto()">Capturar</button>
+                <canvas id="canvas" style="display:none;"></canvas>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar</button>
+        </form>
+    </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/js/layout.js}"></script>
-
+<script src="/js/formulario-model.js"></script>
 </body>
 </html>
