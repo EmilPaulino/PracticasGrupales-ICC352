@@ -9,7 +9,7 @@ import main.entidades.Formulario;
 import main.entidades.Usuario;
 import main.entidades.UsuarioEmbebido;
 import main.servicios.FormularioServices;
-import main.servicios.UsuarioServices;
+import main.servicios.UsuarioService;
 import main.util.RespuestaDTO;
 
 import java.util.Date;
@@ -42,7 +42,7 @@ public class FormularioController {
     public static void crearFormulario(Context ctx) {
         Formulario formulario = ctx.bodyAsClass(Formulario.class);
         String username = ctx.attribute("username");
-        Usuario usuario = UsuarioServices.getInstancia().getUsuarioByUsername(username);
+        Usuario usuario = UsuarioService.getInstancia().findByUsername(username);
         if (usuario == null) {
             throw new UnauthorizedResponse("Usuario no válido");
         }
@@ -110,7 +110,7 @@ public class FormularioController {
 
             Formulario formulario = mapper.treeToValue(node, Formulario.class);
 
-            Usuario usuario = UsuarioServices.getInstancia().getUsuarioByUsername(username);
+            Usuario usuario = UsuarioService.getInstancia().findByUsername(username);
             formulario.setUsuario(new UsuarioEmbebido(usuario));
 
             validarFormulario(formulario);

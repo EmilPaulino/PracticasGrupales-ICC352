@@ -5,27 +5,17 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Encuestas OP — Iniciar Sesión</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
     <link th:href="@{/css/login.css}" rel="stylesheet"/>
     <link th:href="@{/css/layout.css}" rel="stylesheet"/>
-
 </head>
 
 <body>
-<!-- NAVBAR -->
+
 <div th:replace="~{templates/fragments/navbar.html :: navbar}"></div>
 
-<!-- LOADING -->
-<div id="loadingScreen" class="d-flex flex-column justify-content-center align-items-center vh-100">
-    <div class="spinner-border text-primary mb-3"></div>
-    <div class="text-secondary">Verificando sesión...</div>
-</div>
-
-<!-- LOGIN -->
-
-<div id="loginCard" class="login-card card d-none mx-auto mt-5">
+<div class="login-card card mx-auto mt-5">
 
     <div class="login-header">
 
@@ -34,8 +24,13 @@
             <img th:src="@{/imgs/logoPucmm.png}" width="100" height="100"/>
 
             <div class="text-white">
-                <div class="fw-bold fs-5">PUCMM</div>
-                <div class="fs-5 opacity-75">Oficina de Planeamiento</div>
+                <div class="fw-bold fs-5">
+                    PUCMM
+                </div>
+
+                <div class="fs-5 opacity-75">
+                    Oficina de Planeamiento
+                </div>
             </div>
 
         </div>
@@ -43,46 +38,65 @@
         <hr class="my-3"/>
 
         <h4 class="text-center fw-semibold mb-0">Iniciar Sesión</h4>
-
     </div>
 
     <div class="login-body">
 
-        <div id="offlineAlert" class="alert alert-warning d-none py-2">
-            <i class="bi bi-wifi-off me-1"></i>
-            Sin conexión — se usará la sesión guardada localmente.
+        <!-- Mensaje de error por credenciales invalidas -->
+        <div th:if="${error}"
+             class="alert alert-danger d-flex align-items-center gap-2 mb-3"
+             role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>Usuario o contraseña incorrectos</span>
         </div>
 
-        <div id="errorAlert" class="alert alert-danger d-none py-2">
-            <i class="bi bi-exclamation-circle me-1"></i>
-            <span id="errorMsg">Credenciales inválidas.</span>
-        </div>
 
-        <form id="loginForm">
-
+        <form method="post" action="/login">
             <div class="mb-3">
                 <label class="form-label fw-medium">Usuario</label>
                 <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-person"></i></span>
-                    <input type="text" class="form-control" id="username" required/>
+                    <span class="input-group-text">
+                    <i class="bi bi-person"></i>
+                    </span>
+
+                    <input type="text" class="form-control" name="username" required/>
                 </div>
+
             </div>
 
             <div class="mb-3">
                 <label class="form-label fw-medium">Contraseña</label>
                 <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                    <input type="password" class="form-control" id="password" required/>
+                    <span class="input-group-text">
+                    <i class="bi bi-lock"></i>
+                    </span>
+
+                    <input type="password" class="form-control" name="password" id="password" required/>
+
                     <button class="btn btn-outline-secondary" type="button" id="togglePw">
-                        <i class="bi bi-eye" id="eyeIcon"></i>
+                        <i class="bi bi-eye"
+                           id="eyeIcon">
+                        </i>
                     </button>
                 </div>
+
             </div>
 
-            <button type="submit" class="btn btn-primary w-100" id="loginBtn">
-                <span id="btnText">Ingresar</span>
-                <span id="btnSpinner" class="spinner-border spinner-border-sm d-none ms-2"></span>
-            </button>
+            <div class="mb-3 d-flex justify-content-between align-items-center">
+
+                <div class="form-check">
+                    <input type="checkbox"
+                           class="form-check-input"
+                           name="remember"
+                           id="rememberMe"/>
+                    <label class="form-check-label" for="rememberMe">
+                        Recuérdame
+                    </label>
+                </div>
+
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Ingresar</button>
 
         </form>
 
@@ -90,139 +104,21 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
 
+<!-- Mostrar / ocultar password -->
 <script>
-    const lc=document.getElementById('loginCard');
-    const ls=document.getElementById('loadingScreen');
-    const f=document.getElementById('loginForm');
-    const u=document.getElementById('username');
-    const p=document.getElementById('password');
-
-    const b=document.getElementById('loginBtn');
-    const t=document.getElementById('btnText');
-    const s=document.getElementById('btnSpinner');
-
-    const ea=document.getElementById('errorAlert');
-    const em=document.getElementById('errorMsg');
-
-    const oa=document.getElementById('offlineAlert');
-
-    const tp=document.getElementById('togglePw');
-    const ei=document.getElementById('eyeIcon');
-
-    (async()=>{
-        const tk = localStorage.getItem('jwt_token');
-        if(tk){
-            try{
-                const r=
-                    await fetch('/api/usuarios',
-                        {
-                            headers:{
-                                'Authorization': 'Bearer '+tk
-                            }
-                        }
-                    );
-
-                if(r.ok){
-                    window.location.href='/';
-                    return;
-                }
-                else{
-                    localStorage.clear();
-                }
-            }
-            catch{
-                localStorage.clear();
-            }
-        }
-
-        ls.classList.add('d-none');
-        lc.classList.remove('d-none');
-
-    })();
-
-    function net(){
-        oa.classList.toggle(
-            'd-none',
-            navigator.onLine
-        );
-    }
-
-    window.addEventListener('online',net);
-    window.addEventListener('offline',net);
-
-    net();
-
-    tp.addEventListener('click',()=>{
-        const m = p.type==='password';
-        p.type=m?'text':'password';
-        ei.className = m?'bi bi-eye-slash': 'bi bi-eye';
+    const p = document.getElementById("password");
+    const tp = document.getElementById("togglePw");
+    const ei = document.getElementById("eyeIcon");
+    tp.addEventListener("click", () => {
+        const m = p.type === "password";
+        p.type = m ? "text" : "password";
+        ei.className = m ? "bi bi-eye-slash" : "bi bi-eye";
     });
-
-    function load(st){
-        b.disabled=st;
-        s.classList.toggle('d-none', !st);
-        t.textContent = st?'Ingresando...':'Ingresar';
-    }
-
-    function err(m){
-        em.textContent=m;
-        ea.classList.remove('d-none');
-    }
-
-    function hide(){
-        ea.classList.add('d-none');
-    }
-
-    f.addEventListener('submit',
-        async e=>{
-            e.preventDefault();
-            hide();
-            load(true);
-            try{
-                const res=
-                    await fetch('/api/login',
-                        {
-                            method:'POST',
-                            headers:{'Content-Type':'application/json'},
-                            body:JSON.stringify({
-                                username:u.value.trim(),
-                                password:
-                                p.value
-                            })
-                        }
-                    );
-
-                const resp = await res.json();
-
-                if(res.ok && resp.exito && resp.datos){
-                    const {token, usuario} = resp.datos;
-
-                    localStorage.setItem('jwt_token', token);
-                    localStorage.setItem('usuario', JSON.stringify(usuario));
-
-                    if(usuario.rol === 'ADMIN'){
-                        window.location.href='/admin/panel';
-                    }else{
-                        window.location.href='/';
-                    }
-                }
-                else{
-                    err(resp.mensaje|| 'Credenciales inválidas.');
-                }
-
-            }
-            catch{
-                err('Error de conexión.');
-            }
-            finally{
-                load(false);
-            }
-
-        });
-
 </script>
 
 </body>
+
 </html>

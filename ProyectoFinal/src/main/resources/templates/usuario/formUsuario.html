@@ -1,22 +1,16 @@
 <!DOCTYPE html>
-<html lang="es"
-      xmlns:th="http://www.thymeleaf.org">
-
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${modo=='editar'} ? 'Editar Usuario' : 'Nuevo Usuario'">Usuario</title>
     <script th:src="@{/js/layout.js}"></script>
-    <title th:text="${modo=='editar'}?'Editar Usuario':'Nuevo Usuario'">Usuario</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/layout.css}">
-
 </head>
 
 <body>
-
-<th:block th:with="activePage='usuarios'"></th:block>
 
 <div th:replace="~{templates/fragments/navbar.html :: navbar}"></div>
 <div th:replace="~{templates/fragments/sidebar.html :: sidebar}"></div>
@@ -34,9 +28,7 @@
             <div class="card-header bg-white border-0 py-3">
 
                 <h4 class="mb-0 fw-semibold"
-                    th:text="${modo=='editar'}?
-    'Editar Usuario':
-    'Nuevo Usuario'">
+                    th:text="${modo=='editar'} ? 'Editar Usuario' : 'Nuevo Usuario'">
                 </h4>
 
             </div>
@@ -45,80 +37,42 @@
 
             <div class="card-body">
 
-                <form id="usuarioForm">
+                <!-- Error si ya existe el usuario que se esta creando -->
+                <div th:if="${error == 'existe'}"
+                     class="alert alert-danger d-flex align-items-center gap-2"
+                     role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span>Este nombre de usuario ya existe</span>
+                </div>
+
+                <form method="post" th:with="accion=${modo=='editar'} ? '/admin/usuarios/actualizar' : '/admin/usuarios/crear'" th:action="${accion}">
+                    <!-- ID oculto para poder editar -->
+                    <input type="hidden" name="id" th:value="${usuario != null ? usuario.idString : ''}">
 
                     <div class="row g-3">
 
-                        <!-- USERNAME -->
-
                         <div class="col-12">
-
-                            <label class="form-label">
-                                Username
-                            </label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   id="username"
-                                   required>
-
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" name="username" required th:value="${usuario != null ? usuario.username : ''}" th:disabled="${modo=='editar'}">
                         </div>
 
-                        <!-- NOMBRE -->
-
                         <div class="col-12">
-
-                            <label class="form-label">
-                                Nombre
-                            </label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   id="nombre"
-                                   required>
-
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" name="nombre" required th:value="${usuario != null ? usuario.nombre : ''}">
                         </div>
 
-                        <!-- PASSWORD -->
-
                         <div class="col-12">
-
-                            <label class="form-label">
-                                Password (dejar vacío para no cambiar)
-                            </label>
-
-                            <input type="password"
-                                   class="form-control"
-                                   id="password">
-
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" name="password">
                         </div>
 
-                        <!-- ROL -->
-
                         <div class="col-12">
-
-                            <label class="form-label">
-                                Rol
-                            </label>
-
-                            <select class="form-select"
-                                    id="rol"
-                                    required>
-
-                                <option value="">
-                                    Seleccione rol
-                                </option>
-
-                                <option value="ADMIN">
-                                    ADMIN
-                                </option>
-
-                                <option value="ENCUESTADOR">
-                                    ENCUESTADOR
-                                </option>
-
+                            <label class="form-label">Rol</label>
+                            <select class="form-select" name="rol" required>
+                                <option value="">Seleccione un rol</option>
+                                <option value="ADMIN" th:selected="${usuario != null and usuario.rol.toString() == 'ADMIN'}">Administrador</option>
+                                <option value="ENCUESTADOR" th:selected="${usuario != null and usuario.rol.toString() == 'ENCUESTADOR'}">Encuestador</option>
                             </select>
-
                         </div>
 
                     </div>
@@ -126,20 +80,12 @@
                     <hr class="my-4">
 
                     <div class="d-flex justify-content-end gap-2">
+                        <a href="/admin/usuarios" class="btn btn-secondary">Cancelar</a>
 
-                        <a href="/admin/usuarios"
-                           class="btn btn-secondary">
-                            Cancelar
-                        </a>
-
-                        <button type="submit"
-                                class="btn btn-primary">
-
+                        <button type="submit" class="btn btn-primary">
                             <i class="bi bi-save"></i>
                             Guardar
-
                         </button>
-
                     </div>
 
                 </form>
@@ -152,121 +98,7 @@
 
 </main>
 
-<script src="/js/auth.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    const form=document.getElementById("usuarioForm");
-
-    const usernameInput=document.getElementById("username");
-    const nombreInput=document.getElementById("nombre");
-    const passwordInput=document.getElementById("password");
-    const rolInput=document.getElementById("rol");
-
-    let usuarioId=null;
-
-    function tk(){
-        return localStorage.getItem("jwt_token");
-    }
-
-    const params=new URLSearchParams(window.location.search);
-
-    const username=params.get("username");
-
-
-    if(username){
-        cargarUsuario(username);
-        usernameInput.disabled=true;
-    }
-
-    async function cargarUsuario(username){
-        try{
-            const r=await fetch(
-                "/api/usuarios/"+username,
-                {
-                    headers:{
-                        "Authorization":
-                            "Bearer "+tk()
-                    }
-                }
-            );
-
-            if(!r.ok){
-                throw new Error("Error cargando usuario");
-            }
-
-            const res=await r.json();
-
-            const u=res.datos;
-
-            if(!u){
-                console.error("Usuario no encontrado");
-                return;
-            }
-            usuarioId=u.id;
-            usernameInput.value=u.username ?? "";
-            nombreInput.value=u.nombre ?? "";
-            rolInput.value=u.rol ?? "";
-        }
-        catch(e){
-            console.error(e);
-            alert("Error cargando usuario");
-        }
-    }
-
-
-    form.addEventListener(
-        "submit",
-        async e=>{
-            e.preventDefault();
-            const data={
-                username:usernameInput.value,
-                nombre:nombreInput.value,
-                password:passwordInput.value,
-                rol:rolInput.value
-            };
-
-            let url="/api/usuarios";
-            let method="POST";
-
-            if(username){
-                method="PUT";
-                data.id=usuarioId;
-                if(!data.password){
-                    delete data.password;
-                }
-            }
-
-            try{
-                const r=await fetch(
-                    url,
-                    {
-                        method:method,
-                        headers:{
-                            "Content-Type":
-                                "application/json",
-                            "Authorization":
-                                "Bearer "+tk()
-                        },
-                        body:JSON.stringify(data)
-                    }
-                );
-
-                if(!r.ok){
-                    const txt=await r.text();
-                    console.error(txt);
-                    alert("Error guardando usuario");
-                    return;
-                }
-                window.location.href="/admin/usuarios";
-            }
-            catch(err){
-                console.error(err);
-                alert("Error de conexión");
-            }
-        }
-    );
-
-</script>
 
 </body>
 

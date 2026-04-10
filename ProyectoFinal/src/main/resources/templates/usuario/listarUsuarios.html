@@ -1,22 +1,18 @@
 <!DOCTYPE html>
-<html lang="es"
-      xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Usuarios</title>
-    <script src="/js/auth.js"></script>
+    <title>Gestión de Usuarios</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/layout.css}">
-
 </head>
 
 <body>
 
 <div th:replace="~{templates/fragments/navbar.html :: navbar}"></div>
-
 <div th:replace="~{templates/fragments/sidebar.html :: sidebar}"></div>
 
 <div id="sidebarOverlay"></div>
@@ -27,28 +23,20 @@
 
         <div class="card shadow-sm border-0">
 
-            <!-- HEADER -->
-
             <div class="card-header bg-white border-0 py-3">
 
                 <div class="d-flex justify-content-between align-items-center">
-
                     <h4 class="mb-0 fw-semibold">
                         Gestión de Usuarios
                     </h4>
 
-                    <button class="btn btn-primary btn-sm" onclick="window.location.href='/admin/usuarios/formulario'">
-
+                    <a class="btn btn-success btn-sm"th:href="@{/admin/usuarios/formulario/crear}">
                         <i class="bi bi-plus-lg"></i>
                         Nuevo usuario
-
-                    </button>
-
+                    </a>
                 </div>
 
             </div>
-
-            <!-- TABLA -->
 
             <div class="table-responsive">
 
@@ -57,33 +45,54 @@
                     <thead class="table-light">
 
                     <tr>
-
-                        <th class="ps-4">
-                            Usuario
-                        </th>
-
-                        <th>
-                            Nombre
-                        </th>
-
-                        <th>
-                            Rol
-                        </th>
-
-                        <th class="text-center pe-4">
-                            Acciones
-                        </th>
-
+                        <th class="ps-4">Usuario</th>
+                        <th>Nombre</th>
+                        <th>Rol</th>
+                        <th class="text-center pe-4">Acciones</th>
                     </tr>
 
                     </thead>
 
-                    <tbody id="usuariosBody">
+                    <tbody>
 
-                    <tr>
-                        <td colspan="4"
-                            class="text-center text-muted py-4">
-                            Cargando usuarios...
+                    <tr th:each="u : ${usuarios}">
+
+                        <td class="ps-4 fw-medium" th:text="${u.username}"></td>
+
+                        <td th:text="${u.nombre}"></td>
+
+                        <td>
+                            <span class="badge rounded-pill bg-primary"th:text="${u.rol}"></span>
+                        </td>
+
+                        <td class="text-center pe-4">
+
+                            <div class="btn-group btn-group-sm">
+
+                                <a class="btn btn-outline-primary"
+                                   th:href="@{/admin/usuarios/formulario/editar/{id}(id=${u.idString})}"
+                                   title="Editar usuario">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+
+                                <button class="btn btn-outline-danger"
+                                        title="Eliminar usuario"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalEliminar"
+                                        th:data-id="${u.idString}"
+                                        th:data-nombre="${u.nombre}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(usuarios)}">
+                        <td colspan="4" class="text-center text-muted py-4">
+                            No hay usuarios registrados
                         </td>
                     </tr>
 
@@ -93,71 +102,50 @@
 
             </div>
 
-            <!-- PAGINACION -->
-
-            <div class="card-footer bg-white border-0">
-
-                <nav class="d-flex justify-content-center">
-
-                    <ul class="pagination mb-0"
-                        id="paginacion">
-                    </ul>
-
-                </nav>
-
-            </div>
-
         </div>
 
     </div>
 
 </main>
 
-<!-- ======================
-     MODAL ELIMINAR
-====================== -->
+<!-- MODAL ELIMINAR -->
 
 <div class="modal fade"
-     id="deleteModal"
+     id="modalEliminar"
      tabindex="-1">
 
     <div class="modal-dialog modal-dialog-centered">
 
         <div class="modal-content">
 
-            <div class="modal-header">
-
-                <h5 class="modal-title">
-                    Confirmar eliminación
-                </h5>
-
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-semibold">Eliminar usuario</h5>
                 <button type="button"
                         class="btn-close"
                         data-bs-dismiss="modal">
                 </button>
+            </div>
+
+            <div class="modal-body">
+                ¿Estás seguro que deseas eliminar a
+                <strong id="modalNombreUsuario"></strong>?
 
             </div>
 
-            <div class="modal-body"
-                 id="deleteText">
+            <div class="modal-footer border-0">
 
-                ¿Seguro que deseas eliminar este usuario?
-
-            </div>
-
-            <div class="modal-footer">
-
-                <button class="btn btn-secondary"
+                <button type="button"
+                        class="btn btn-secondary"
                         data-bs-dismiss="modal">
                     Cancelar
                 </button>
 
-                <button class="btn btn-danger"
-                        onclick="confirmDelete()">
-
+                <a id="modalBtnEliminar"
+                   href="#"
+                   class="btn btn-danger">
+                    <i class="bi bi-trash me-1"></i>
                     Eliminar
-
-                </button>
+                </a>
 
             </div>
 
@@ -166,193 +154,23 @@
     </div>
 
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script th:src="@{/js/layout.js}"></script>
+
 <script>
-    let usuarios = [];
-    let pagina = 1;
-    const size = 5;
 
-    const tbody = document.getElementById("usuariosBody");
+    const modalEliminar = document.getElementById('modalEliminar');
 
-    const pagUI = document.getElementById("paginacion");
+    modalEliminar.addEventListener('show.bs.modal', event => {
 
-    let deleteId = null;
-    let deleteUsername = null;
+        const btn    = event.relatedTarget;
+        const id     = btn.getAttribute('data-id');
+        const nombre = btn.getAttribute('data-nombre');
 
-    const deleteModal =
-        new bootstrap.Modal(
-            document.getElementById("deleteModal")
-        );
+        document.getElementById('modalNombreUsuario').textContent = nombre;
+        document.getElementById('modalBtnEliminar').href = '/admin/usuarios/eliminar/' + id;
 
-    function tk() {
-        return localStorage.getItem("jwt_token");
-    }
-
-    async function cargar() {
-
-        try {
-
-            const r =
-                await fetch(
-                    "/api/usuarios",
-                    {
-                        headers: {
-                            "Authorization":
-                                "Bearer " + tk()
-                        }
-                    }
-                );
-
-            const res = await r.json();
-            usuarios = res.datos || [];
-            render();
-        } catch (e) {
-            tbody.innerHTML =
-                `<tr>
-                    <td colspan="4" class="text-center text-danger py-4">
-                    Error cargando usuarios
-                    </td>
-                </tr>`;
-        }
-    }
-
-    function render() {
-        tbody.innerHTML = "";
-        const start = (pagina - 1) * size;
-        const data = usuarios.slice(start, start + size);
-        if (data.length === 0) {
-            tbody.innerHTML =
-                `<tr>
-                    <td colspan="4" class="text-center text-muted py-4">
-                    No hay usuarios
-                    </td>
-                </tr>`;
-            return;
-        }
-
-        data.forEach(u => {
-            tbody.innerHTML +=
-                `<tr>
-
-                    <td class="ps-4 fw-medium">
-                    ${u.username}
-                    </td>
-
-                    <td>
-                    ${u.nombre ?? "-"}
-                    </td>
-
-                    <td>
-                        <span class="badge rounded-pill bg-primary">
-                        ${u.rol}
-                        </span>
-                    </td>
-
-                    <td class="text-center pe-4">
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary" onclick="editar('${u.username}')" title="Editar usuario">
-                            <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-outline-danger" onclick="del('${u.id}','${u.username}')" title="Eliminar usuario">
-                            <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-
-                </tr>`;
-
-        });
-
-        renderPag();
-
-    }
-
-    //Paginacion
-    function renderPag() {
-        pagUI.innerHTML = "";
-        const total = Math.ceil(usuarios.length / size);
-        pagUI.innerHTML +=
-
-            `<li class="page-item ${pagina === 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" onclick="ir(${pagina - 1});return false;">
-                Previous
-                </a>
-            </li>`;
-
-        for (let i = 1; i <= total; i++) {
-            pagUI.innerHTML +=
-                `<li class="page-item ${i === pagina ? 'active' : ''}">
-                    <a class="page-link" href="#" onclick="ir(${i});return false;">
-                    ${i}
-                    </a>
-                </li>`;
-        }
-
-        pagUI.innerHTML +=
-            `<li class="page-item ${pagina === total ? 'disabled' : ''}">
-                <a class="page-link" href="#" onclick="ir(${pagina + 1});return false;">
-                Next
-                </a>
-            </li>`;
-    }
-
-    //Cambiar pagina
-    function ir(p) {
-        const total = Math.ceil(usuarios.length / size);
-        if (p < 1 || p > total)
-            return;
-        pagina = p;
-        render();
-    }
-
-    function del(id, username) {
-        deleteId = id;
-        deleteUsername = username;
-        document.getElementById("deleteText").innerHTML = `¿Seguro que deseas eliminar el usuario <b>${username}</b>?`;
-        deleteModal.show();
-
-    }
-
-    function editar(username) {
-        window.location.href = "/admin/usuarios/formulario?username=" + username;
-    }
-
-    async function confirmDelete() {
-
-        if (!deleteId)
-            return;
-
-        await fetch(
-            "/api/usuarios/" + deleteId,
-            {
-                method: "DELETE",
-                headers: {
-                    "Authorization":
-                        "Bearer " + tk()
-                }
-            }
-        );
-
-        deleteModal.hide();
-        deleteId = null;
-        deleteUsername = null;
-        cargar();
-    }
-
-    //Websocket
-    const ws =
-        new WebSocket(
-            "ws://" +
-            location.host +
-            "/ws/usuarios"
-        );
-
-    ws.onmessage = () => {
-        cargar();
-    };
-
-    cargar();
+    });
 
 </script>
 
