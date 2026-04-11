@@ -19,6 +19,11 @@ public class Main {
 
             config.http.maxRequestSize = 50_000_000;
 
+            config.jetty.modifyWebSocketServletFactory(factory -> {
+                factory.setMaxTextMessageSize(50 * 1024 * 1024); // 50 MB
+                factory.setIdleTimeout(java.time.Duration.ofSeconds(60));
+            });
+
             config.fileRenderer(new JavalinThymeleaf());
 
             config.staticFiles.add(staticFileConfig -> {
@@ -94,8 +99,39 @@ public class Main {
             config.routes.get("/formularios/ver/{id}", FormularioController::verFormulario);
             config.routes.get("/formularios/editar", FormularioController::mostrarFormulario);
 
-            //API Sincronizar formularios
-            config.routes.post("/api/formularios", FormularioController::sincronizarFormularios);
+            // ─── WebSocket ───────────────────────────────────────────────────
+            config.routes.ws("/ws/formularios", wsConfig -> {
+
+                wsConfig.onConnect(session -> {
+                    System.out.println("[WS] Cliente conectado");
+                });
+
+                wsConfig.onMessage(session -> {
+                    try {
+                        System.out.println("[WS] Mensaje recibido, tamaño: " + session.message().length());
+
+                        // El controlador procesa y devuelve "OK" o "ERROR"
+                        String resultado = FormularioController.sincronizarFormulariosWS(session.message());
+
+                        session.send(resultado);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        try {
+                            session.send("ERROR");
+                        } catch (Exception ignored) {}
+                    }
+                });
+
+                wsConfig.onClose(session -> {
+                    System.out.println("[WS] Cliente desconectado");
+                });
+
+                wsConfig.onError(session -> {
+                    System.err.println("[WS] Error en sesión");
+                });
+
+            });
 
         }).start(7000);
 
