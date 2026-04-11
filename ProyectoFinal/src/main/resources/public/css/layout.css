@@ -6,9 +6,10 @@
 
 body {
     background-color: #f0f2f5;
-    margin: 0;
     padding-left: 20px;
     padding-right: 20px;
+    margin-top: 85px;
+
 }
 
 .navbar-pucmm {
@@ -98,4 +99,7 @@ body {
 
 #sidebarOverlay.show {
     display: block;
+}
+
+main {
 }
