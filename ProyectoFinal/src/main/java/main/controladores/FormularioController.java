@@ -25,10 +25,22 @@ public class FormularioController {
 
     public static void vistaPrincipal(Context ctx) {
         String username = ctx.sessionAttribute("username");
-        List<Formulario> formularios = formularioService.listarFormulariosPorUsuario(username);
+        String nombre = ctx.sessionAttribute("nombre");
+        int page = ctx.queryParamAsClass("page", Integer.class).getOrDefault(1);
+
+        int size = 10;
+
+        List<Formulario> formularios = formularioService.listarFormulariosPorUsuarioPaginado(username, page, size);
+
+        long total = formularioService.contarFormulariosPorUsuario(username);
+
+        int totalPages = (int) Math.ceil((double) total / size);
         Map<String, Object> model = new HashMap<>();
         model.put("formulariosSync", formularios);
-        model.put("username",  username);
+        model.put("username", username);
+        model.put("nombre", nombre);
+        model.put("currentPage", page);
+        model.put("totalPages", totalPages);
         ctx.render("templates/formulario/listarFormEnc.html", model);
     }
 
@@ -80,10 +92,8 @@ public class FormularioController {
                 return "ERROR";
             }
 
-            List<Formulario> lista = mapper.convertValue(
-                    formulariosNode,
-                    new TypeReference<List<Formulario>>() {}
-            );
+            List<Formulario> lista = mapper.convertValue(formulariosNode, new TypeReference<List<Formulario>>() {
+            });
 
             if (lista.isEmpty()) {
                 System.out.println("Lista de formularios vacía, nada que guardar");
@@ -113,5 +123,37 @@ public class FormularioController {
             e.printStackTrace();
             return "ERROR";
         }
+    }
+
+    public static void verFormularioAdmin(Context ctx) {
+        String id = ctx.pathParam("id");
+        Formulario formulario = formularioService.getFormularioPorId(id);
+        if (formulario == null) {
+            throw new NotFoundResponse("Formulario no encontrado");
+        }
+        Map<String, Object> model = new HashMap<>();
+        model.put("formulario", formulario);
+        ctx.render("/templates/formulario/verFormAdmin.html", model);
+    }
+
+    public static void listarFormulariosAdmin(Context ctx) {
+
+        int page = ctx.queryParamAsClass("page", Integer.class).getOrDefault(1);
+
+        int size = 10;
+
+        List<Formulario> lista = formularioService.listarFormulariosPaginados(page, size);
+
+        long total = formularioService.contarFormularios();
+
+        int totalPages = (int) Math.ceil((double) total / size);
+
+        Map<String, Object> model = new HashMap<>();
+
+        model.put("formularios", lista);
+        model.put("currentPage", page);
+        model.put("totalPages", totalPages);
+
+        ctx.render("/templates/formulario/listarFormAdmin.html", model);
     }
 }
