@@ -31,6 +31,8 @@ public class AuthController {
 
         ctx.sessionAttribute("username", usuario.getUsername());
         ctx.sessionAttribute("nombre", usuario.getNombre());
+        ctx.sessionAttribute("rol", usuario.getRol());
+
         boolean remember = ctx.formParam("remember") != null;
         if (remember) {
             String encrypted = EncryptUtil.encrypt(usuario.getUsername());

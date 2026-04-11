@@ -82,10 +82,8 @@ public class FormularioController {
                 return "ERROR";
             }
 
-            List<Formulario> lista = mapper.convertValue(
-                    formulariosNode,
-                    new TypeReference<List<Formulario>>() {}
-            );
+            List<Formulario> lista = mapper.convertValue(formulariosNode, new TypeReference<List<Formulario>>() {
+            });
 
             if (lista.isEmpty()) {
                 System.out.println("Lista de formularios vacía, nada que guardar");
@@ -115,5 +113,23 @@ public class FormularioController {
             e.printStackTrace();
             return "ERROR";
         }
+    }
+
+    public static void verFormularioAdmin(Context ctx) {
+        String id = ctx.pathParam("id");
+        Formulario formulario = formularioService.getFormularioPorId(id);
+        if (formulario == null) {
+            throw new NotFoundResponse("Formulario no encontrado");
+        }
+        Map<String, Object> model = new HashMap<>();
+        model.put("formulario", formulario);
+        ctx.render("/templates/formulario/verFormAdmin.html", model);
+    }
+
+    public static void listarFormulariosAdmin(Context ctx) {
+        List<Formulario> lista = formularioService.listarFormularios();
+        Map<String, Object> model = new HashMap<>();
+        model.put("formularios", lista);
+        ctx.render("/templates/formulario/listarFormAdmin.html", model);
     }
 }

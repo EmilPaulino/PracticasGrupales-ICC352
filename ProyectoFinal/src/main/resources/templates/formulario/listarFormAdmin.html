@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Formularios Registrados</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          th:href="@{/css/layout.css}">
+
+</head>
+
+<body>
+
+<div th:replace="~{templates/fragments/navbar.html :: navbar}"></div>
+<div th:replace="~{templates/fragments/sidebar.html :: sidebar}"></div>
+
+<div id="sidebarOverlay"></div>
+
+<main class="main-content">
+
+    <div class="container-fluid">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-header bg-white border-0 py-3">
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <h4 class="mb-0 fw-semibold">
+
+                        Formularios Registrados
+
+                    </h4>
+
+                </div>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+
+                    <tr>
+
+                        <th class="ps-4">Nombre</th>
+
+                        <th>Sector</th>
+
+                        <th>Nivel Escolar</th>
+
+                        <th>Encuestador</th>
+
+                        <th>Fecha Registro</th>
+
+                        <th class="text-center pe-4">
+                            Acciones
+                        </th>
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    <tr th:each="f : ${formularios}">
+
+                        <td class="ps-4 fw-medium"
+                            th:text="${f.nombre}">
+                        </td>
+
+                        <td th:text="${f.sector}">
+                        </td>
+
+                        <td>
+
+                            <span class="badge rounded-pill bg-success"
+                                  th:text="${f.nivelEscolar}">
+                            </span>
+
+                        </td>
+
+                        <td th:text="${f.usuario.username}">
+                        </td>
+
+                        <td th:text="${#dates.format(f.fechaRegistro,'dd/MM/yyyy HH:mm')}">
+                        </td>
+
+                        <td class="text-center pe-4">
+
+                            <a class="btn btn-outline-primary btn-sm"
+                               th:href="@{/admin/formularios/ver/{id}(id=${f.id})}"
+                               title="Ver formulario">
+
+                                <i class="bi bi-eye"></i>
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(formularios)}">
+
+                        <td colspan="6"
+                            class="text-center text-muted py-4">
+
+                            No hay formularios registrados
+
+                        </td>
+
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

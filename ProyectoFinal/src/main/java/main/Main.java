@@ -7,6 +7,7 @@ import io.javalin.rendering.template.JavalinThymeleaf;
 import main.controladores.AuthController;
 import main.controladores.FormularioController;
 import main.controladores.UsuarioController;
+import main.entidades.Rol;
 import main.entidades.Usuario;
 import main.servicios.UsuarioService;
 import main.util.EncryptUtil;
@@ -66,9 +67,32 @@ public class Main {
             //Filtro Admin
             config.routes.before("/admin/{*}", ctx -> {
                 String username = ctx.sessionAttribute("username");
+                Rol rol = ctx.sessionAttribute("rol");
                 if (username == null) {
                     ctx.redirect("/login");
+                    return;
                 }
+
+                if (rol == null || rol != Rol.ADMIN) {
+                    ctx.redirect("/formularios");
+                    return;
+                }
+            });
+
+            config.routes.before(ctx -> {
+                String path = ctx.path();
+                if (path.equals("/login") || path.startsWith("/css") || path.startsWith("/js") || path.startsWith("/imgs") || path.startsWith("/js")) {
+                    return;
+                }
+                if (ctx.sessionAttribute("username") == null) {
+                    ctx.redirect("/login");
+                    return;
+                }
+            });
+
+            //Endpoint /
+            config.routes.get("/", ctx -> {
+                ctx.redirect("/formularios");
             });
 
             //Endpoints Auth
@@ -91,15 +115,14 @@ public class Main {
 
             //Endpoints Formularios
 
-            config.routes.get("/admin/formularios", FormularioController::listarFormularios);
-            config.routes.get("/admin/formularios/ver/{id}", FormularioController::verFormulario);
+            config.routes.get("/admin/formularios", FormularioController::listarFormulariosAdmin);
+            config.routes.get("/admin/formularios/ver/{id}", FormularioController::verFormularioAdmin);
 
             config.routes.get("/formularios", FormularioController::vistaPrincipal);
             config.routes.get("/formularios/crear", FormularioController::mostrarFormulario);
             config.routes.get("/formularios/ver/{id}", FormularioController::verFormulario);
             config.routes.get("/formularios/editar", FormularioController::mostrarFormulario);
 
-            // ─── WebSocket ───────────────────────────────────────────────────
             config.routes.ws("/ws/formularios", wsConfig -> {
 
                 wsConfig.onConnect(session -> {
@@ -119,7 +142,8 @@ public class Main {
                         e.printStackTrace();
                         try {
                             session.send("ERROR");
-                        } catch (Exception ignored) {}
+                        } catch (Exception ignored) {
+                        }
                     }
                 });
 
