@@ -58,18 +58,11 @@
                     <tr>
 
                         <th class="ps-4">Nombre</th>
-
                         <th>Sector</th>
-
                         <th>Nivel Escolar</th>
-
                         <th>Encuestador</th>
-
                         <th>Fecha Registro</th>
-
-                        <th class="text-center pe-4">
-                            Acciones
-                        </th>
+                        <th class="text-center pe-4">Acciones</th>
 
                     </tr>
 
@@ -87,11 +80,9 @@
                         </td>
 
                         <td>
-
                             <span class="badge rounded-pill bg-success"
                                   th:text="${f.nivelEscolar}">
                             </span>
-
                         </td>
 
                         <td th:text="${f.usuario.username}">
@@ -103,8 +94,7 @@
                         <td class="text-center pe-4">
 
                             <a class="btn btn-outline-primary btn-sm"
-                               th:href="@{/admin/formularios/ver/{id}(id=${f.id})}"
-                               title="Ver formulario">
+                               th:href="@{/admin/formularios/ver/{id}(id=${f.id})}">
 
                                 <i class="bi bi-eye"></i>
 
@@ -128,6 +118,61 @@
                     </tbody>
 
                 </table>
+
+            </div>
+
+            <!-- 🔵 PAGINACIÓN -->
+
+            <div class="card-body">
+
+                <nav aria-label="Paginación">
+
+                    <ul class="pagination justify-content-center">
+
+                        <!-- Previous -->
+
+                        <li class="page-item"
+                            th:classappend="${currentPage == 1} ? 'disabled'">
+
+                            <a class="page-link"
+                               th:href="@{/admin/formularios(page=${currentPage - 1})}">
+
+                                Previous
+
+                            </a>
+
+                        </li>
+
+                        <!-- Números -->
+
+                        <li class="page-item"
+                            th:each="i : ${#numbers.sequence(1, totalPages)}"
+                            th:classappend="${i == currentPage} ? 'active'">
+
+                            <a class="page-link"
+                               th:href="@{/admin/formularios(page=${i})}"
+                               th:text="${i}">
+                            </a>
+
+                        </li>
+
+                        <!-- Next -->
+
+                        <li class="page-item"
+                            th:classappend="${currentPage == totalPages} ? 'disabled'">
+
+                            <a class="page-link"
+                               th:href="@{/admin/formularios(page=${currentPage + 1})}">
+
+                                Next
+
+                            </a>
+
+                        </li>
+
+                    </ul>
+
+                </nav>
 
             </div>
 

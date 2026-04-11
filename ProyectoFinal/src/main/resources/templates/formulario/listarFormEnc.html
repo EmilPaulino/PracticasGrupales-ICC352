@@ -108,6 +108,54 @@
                             </tbody>
                         </table>
                     </div>
+                    <nav class="mt-3">
+
+                        <ul class="pagination justify-content-center">
+
+                            <!-- Previous -->
+
+                            <li class="page-item"
+                                th:classappend="${currentPage == 1} ? 'disabled'">
+
+                                <a class="page-link"
+                                   th:href="@{/formularios(page=${currentPage - 1}, tab='sincronizados')}">
+
+                                    Previous
+
+                                </a>
+
+                            </li>
+
+                            <!-- Números -->
+
+                            <li class="page-item"
+                                th:each="i : ${#numbers.sequence(1, totalPages)}"
+                                th:classappend="${i == currentPage} ? 'active'">
+
+                                <a class="page-link"
+                                   th:href="@{/formularios(page=${i}, tab='sincronizados')}"
+                                   th:text="${i}">
+                                </a>
+
+                            </li>
+
+                            <!-- Next -->
+
+                            <li class="page-item"
+                                th:classappend="${currentPage == totalPages} ? 'disabled'">
+
+                                <a class="page-link"
+                                   th:href="@{/formularios(page=${currentPage + 1}, tab='sincronizados')}">
+
+                                    Next
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </nav>
                 </div>
 
             </div>
@@ -152,12 +200,12 @@
 
 <script th:inline="javascript">
     const USERNAME = /*[[${username}]]*/ "";
-    const NOMBRE   = /*[[${nombre}]]*/ "";
+    const NOMBRE = /*[[${nombre}]]*/ "";
 
     if (USERNAME) {
         localStorage.setItem("auth_user", JSON.stringify({
             username: USERNAME,
-            nombre:   NOMBRE
+            nombre: NOMBRE
         }));
     }
 </script>
@@ -168,7 +216,7 @@
     const USERNAME_LOCAL = authUser.username || "";
 
     let eliminarIndex = null;
-    let workerActivo  = null;
+    let workerActivo = null;
 
     function mostrarAlerta(texto, tipo = "info") {
         const alerta = document.getElementById("alertaSync");
@@ -180,27 +228,27 @@
 
     function mostrarModal(titulo, texto) {
         document.getElementById("modalTitulo").textContent = titulo;
-        document.getElementById("modalTexto").textContent  = texto;
+        document.getElementById("modalTexto").textContent = texto;
         new bootstrap.Modal(document.getElementById("modalMensaje")).show();
     }
 
     function setBtnSincronizando(cargando) {
         const btn = document.getElementById("btnSincronizar");
         if (cargando) {
-            btn.disabled  = true;
+            btn.disabled = true;
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>Sincronizando...`;
         } else {
-            btn.disabled  = false;
+            btn.disabled = false;
             btn.innerHTML = `<i class="bi bi-cloud-upload me-1"></i>Sincronizar`;
         }
     }
 
     function cargarLocales() {
-        const lista    = JSON.parse(localStorage.getItem("formularios")) || [];
-        const tabla    = document.getElementById("tablaLocales");
+        const lista = JSON.parse(localStorage.getItem("formularios")) || [];
+        const tabla = document.getElementById("tablaLocales");
         const contador = document.getElementById("contadorPendientes");
 
-        tabla.innerHTML      = "";
+        tabla.innerHTML = "";
         contador.textContent = lista.length;
 
         if (lista.length === 0) {
@@ -286,7 +334,7 @@
         workerActivo = new Worker("/js/sync-worker.js");
 
         const payload = {
-            username:    USERNAME_LOCAL,
+            username: USERNAME_LOCAL,
             formularios: lista
         };
 
@@ -334,6 +382,32 @@
 
     window.addEventListener("offline", () => {
         mostrarAlerta("Sin conexión. Los formularios se guardarán localmente.", "warning");
+    });
+
+</script>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get("tab");
+
+        if (tab === "sincronizados") {
+
+            const tabTrigger =
+                document.querySelector(
+                    '[data-bs-target="#sincronizados"]'
+                );
+
+            if (tabTrigger) {
+
+                new bootstrap.Tab(tabTrigger).show();
+
+            }
+
+        }
+
     });
 
 </script>

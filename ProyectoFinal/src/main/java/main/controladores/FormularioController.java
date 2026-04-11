@@ -26,11 +26,21 @@ public class FormularioController {
     public static void vistaPrincipal(Context ctx) {
         String username = ctx.sessionAttribute("username");
         String nombre = ctx.sessionAttribute("nombre");
-        List<Formulario> formularios = formularioService.listarFormulariosPorUsuario(username);
+        int page = ctx.queryParamAsClass("page", Integer.class).getOrDefault(1);
+
+        int size = 10;
+
+        List<Formulario> formularios = formularioService.listarFormulariosPorUsuarioPaginado(username, page, size);
+
+        long total = formularioService.contarFormulariosPorUsuario(username);
+
+        int totalPages = (int) Math.ceil((double) total / size);
         Map<String, Object> model = new HashMap<>();
         model.put("formulariosSync", formularios);
         model.put("username", username);
         model.put("nombre", nombre);
+        model.put("currentPage", page);
+        model.put("totalPages", totalPages);
         ctx.render("templates/formulario/listarFormEnc.html", model);
     }
 
@@ -127,9 +137,23 @@ public class FormularioController {
     }
 
     public static void listarFormulariosAdmin(Context ctx) {
-        List<Formulario> lista = formularioService.listarFormularios();
+
+        int page = ctx.queryParamAsClass("page", Integer.class).getOrDefault(1);
+
+        int size = 10;
+
+        List<Formulario> lista = formularioService.listarFormulariosPaginados(page, size);
+
+        long total = formularioService.contarFormularios();
+
+        int totalPages = (int) Math.ceil((double) total / size);
+
         Map<String, Object> model = new HashMap<>();
+
         model.put("formularios", lista);
+        model.put("currentPage", page);
+        model.put("totalPages", totalPages);
+
         ctx.render("/templates/formulario/listarFormAdmin.html", model);
     }
 }
