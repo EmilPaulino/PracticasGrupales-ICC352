@@ -17,6 +17,8 @@ public class Main {
 
         Javalin.create(config -> {
 
+            config.http.maxRequestSize = 50_000_000;
+
             config.fileRenderer(new JavalinThymeleaf());
 
             config.staticFiles.add(staticFileConfig -> {
@@ -69,14 +71,6 @@ public class Main {
             config.routes.post("/login", AuthController::login);
             config.routes.get("/logout", AuthController::logout);
 
-            // ===============================
-            // HOME
-            // ===============================
-
-            config.routes.get("/", ctx -> {
-                ctx.render("templates/formulario/listarFormEnc.html");
-            });
-
             //Endpoint Panel
             config.routes.get("/admin/panel", ctx -> {
                 ctx.render("templates/panel/panel.html");
@@ -91,12 +85,17 @@ public class Main {
             config.routes.get("/admin/usuarios/eliminar/{id}", UsuarioController::eliminarUsuario);
 
             //Endpoints Formularios
-            config.routes.get("/formularios", FormularioController::listarFormularios);
-            config.routes.get("/formularios/usuario", FormularioController::listarFormulariosPorUsuario);
-            config.routes.get("/formularios/{id}", FormularioController::getFormularioPorId);
-            config.routes.post("/formularios/crear", FormularioController::crearFormulario);
-            config.routes.post("/formularios/actualizar", FormularioController::actualizarFormulario);
-            config.routes.get("/formularios/eliminar/{id}", FormularioController::eliminarFormulario);
+
+            config.routes.get("/admin/formularios", FormularioController::listarFormularios);
+            config.routes.get("/admin/formularios/ver/{id}", FormularioController::verFormulario);
+
+            config.routes.get("/formularios", FormularioController::vistaPrincipal);
+            config.routes.get("/formularios/crear", FormularioController::mostrarFormulario);
+            config.routes.get("/formularios/ver/{id}", FormularioController::verFormulario);
+            config.routes.get("/formularios/editar", FormularioController::mostrarFormulario);
+
+            //API Sincronizar formularios
+            config.routes.post("/api/formularios", FormularioController::sincronizarFormularios);
 
         }).start(7000);
 

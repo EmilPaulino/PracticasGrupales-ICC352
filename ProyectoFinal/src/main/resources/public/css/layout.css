@@ -99,3 +99,7 @@ body {
 #sidebarOverlay.show {
     display: block;
 }
+
+main {
+    margin-top: 85px;
+}
