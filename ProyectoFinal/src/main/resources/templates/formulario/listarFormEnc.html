@@ -29,7 +29,6 @@
                     <button class="btn btn-success btn-sm" id="btnSincronizar" onclick="sincronizarTodos()">
                         <i class="bi bi-cloud-upload me-1"></i>Sincronizar
                     </button>
-
                     <a class="btn btn-primary btn-sm" th:href="@{/formularios/crear}">
                         <i class="bi bi-plus-lg me-1"></i>Nuevo
                     </a>
@@ -55,6 +54,7 @@
 
             <div class="tab-content mt-3">
 
+                <!-- Tab Pendientes -->
                 <div class="tab-pane fade show active" id="pendientes">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
@@ -88,7 +88,10 @@
                             <tr th:each="f : ${formulariosSync}">
                                 <td class="ps-4 fw-medium" th:text="${f.nombre}"></td>
                                 <td th:text="${f.sector}"></td>
-                                <td th:text="${f.nivelEscolar}"></td>
+                                <td>
+                                    <span class="badge rounded-pill bg-success"
+                                          th:text="${f.nivelEscolar}"></span>
+                                </td>
                                 <td th:text="${#dates.format(f.fechaRegistro,'dd/MM/yyyy')}"></td>
                                 <td class="text-center">
                                     <a class="btn btn-outline-primary btn-sm"
@@ -112,7 +115,7 @@
     </div>
 </main>
 
-=<div class="modal fade" id="modalEliminar" tabindex="-1">
+<div class="modal fade" id="modalEliminar" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0">
@@ -130,7 +133,7 @@
     </div>
 </div>
 
-=<div class="modal fade" id="modalMensaje" tabindex="-1">
+<div class="modal fade" id="modalMensaje" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0">
@@ -149,9 +152,20 @@
 
 <script th:inline="javascript">
     const USERNAME = /*[[${username}]]*/ "";
+    const NOMBRE   = /*[[${nombre}]]*/ "";
+
+    if (USERNAME) {
+        localStorage.setItem("auth_user", JSON.stringify({
+            username: USERNAME,
+            nombre:   NOMBRE
+        }));
+    }
 </script>
 
 <script>
+
+    const authUser = JSON.parse(localStorage.getItem("auth_user")) || {};
+    const USERNAME_LOCAL = authUser.username || "";
 
     let eliminarIndex = null;
     let workerActivo  = null;
@@ -191,11 +205,11 @@
 
         if (lista.length === 0) {
             tabla.innerHTML = `
-            <tr>
-              <td colspan="4" class="text-center text-muted py-4">
-                No hay formularios pendientes
-              </td>
-            </tr>`;
+                <tr>
+                  <td colspan="4" class="text-center text-muted py-4">
+                    No hay formularios pendientes
+                  </td>
+                </tr>`;
             return;
         }
 
@@ -204,7 +218,11 @@
             fila.innerHTML = `
                 <td class="ps-4 fw-medium">${f.nombre || "Sin nombre"}</td>
                 <td>${f.sector || "-"}</td>
-                <td>${f.nivelEscolar || "-"}</td>
+                <td>
+                  <span class="badge rounded-pill bg-warning text-dark">
+                    ${f.nivelEscolar || "-"}
+                  </span>
+                </td>
                 <td class="text-center">
                   <div class="btn-group btn-group-sm">
                     <button class="btn btn-outline-secondary" onclick="editar(${index})" title="Editar">
@@ -241,7 +259,6 @@
     }
 
     function sincronizarTodos() {
-
         const lista = JSON.parse(localStorage.getItem("formularios")) || [];
 
         if (lista.length === 0) {
@@ -249,8 +266,13 @@
             return;
         }
 
-        if (!USERNAME) {
+        if (!USERNAME_LOCAL) {
             mostrarModal("Error", "No se pudo identificar tu sesión. Recarga la página.");
+            return;
+        }
+
+        if (!window.Worker) {
+            mostrarModal("Error", "Tu navegador no soporta Web Workers.");
             return;
         }
 
@@ -264,7 +286,7 @@
         workerActivo = new Worker("/js/sync-worker.js");
 
         const payload = {
-            username:    USERNAME,
+            username:    USERNAME_LOCAL,
             formularios: lista
         };
 
@@ -304,7 +326,7 @@
 
     window.addEventListener("online", () => {
         const lista = JSON.parse(localStorage.getItem("formularios")) || [];
-        if (lista.length > 0 && USERNAME) {
+        if (lista.length > 0 && USERNAME_LOCAL) {
             mostrarAlerta("Conexión restaurada. Sincronizando automáticamente...", "info");
             setTimeout(() => sincronizarTodos(), 1000);
         }

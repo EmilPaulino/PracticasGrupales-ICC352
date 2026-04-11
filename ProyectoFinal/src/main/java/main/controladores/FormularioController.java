@@ -25,10 +25,12 @@ public class FormularioController {
 
     public static void vistaPrincipal(Context ctx) {
         String username = ctx.sessionAttribute("username");
+        String nombre = ctx.sessionAttribute("nombre");
         List<Formulario> formularios = formularioService.listarFormulariosPorUsuario(username);
         Map<String, Object> model = new HashMap<>();
         model.put("formulariosSync", formularios);
-        model.put("username",  username);
+        model.put("username", username);
+        model.put("nombre", nombre);
         ctx.render("templates/formulario/listarFormEnc.html", model);
     }
 
