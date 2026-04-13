@@ -129,6 +129,7 @@ public class RestController {
         usuarioEmbebido.setUsername(usuario.getUsername());
         usuarioEmbebido.setNombre(usuario.getNombre());
         formulario.setUsuario(usuarioEmbebido);
+        formulario.setFechaRegistro(new Date());
         FormularioServices.getInstancia().crearFormulario(formulario);
         ctx.status(HttpStatus.CREATED).json(formulario);
     }

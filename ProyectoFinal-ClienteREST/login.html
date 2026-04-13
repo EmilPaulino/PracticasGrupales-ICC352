@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="min-vh-100 d-flex align-items-center justify-content-center">
+  <div class="container" style="max-width: 400px;">
+
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-body px-4 py-5">
+
+        <div class="text-center mb-4">
+          <div class="d-inline-flex align-items-center justify-content-center rounded-3 mb-3"
+            style="width:48px;height:48px;background:#f3f4f6;">
+            <i class="bi bi-person-lock" style="font-size:1.4rem;"></i>
+          </div>
+          <h5 class="fw-semibold mb-1">Iniciar sesión</h5>
+          <p class="text-muted mb-0" style="font-size:13px;">Ingresa tus credenciales para continuar</p>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-medium" style="font-size:14px;">Usuario</label>
+          <input type="text" id="username" class="form-control rounded-3">
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-medium" style="font-size:14px;">Contraseña</label>
+          <input type="password" id="password" class="form-control rounded-3" onkeydown="if(event.key==='Enter') login()">
+        </div>
+
+        <div id="mensaje-container" class="mb-3 d-none">
+          <div id="mensaje" class="alert mb-0 rounded-3 py-2 px-3" style="font-size:14px;"></div>
+        </div>
+
+        <div class="d-grid">
+          <button onclick="login()" id="btnLogin" class="btn btn-dark rounded-3 fw-medium py-2">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function login() {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const btn = document.getElementById("btnLogin");
+
+  if (!username || !password) {
+    mostrarMensaje("warning", "bi-exclamation-triangle", "Completa todos los campos.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("username", username);
+  formData.append("password", password);
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+  document.getElementById("mensaje-container").classList.add("d-none");
+
+  fetch("http://localhost:7000/api/login", {
+    method: "POST",
+    body: formData
+  })
+  .then(function(response) {
+    return response.json();
+  })
+  .then(function(data) {
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+      window.location.href = "formularios.html";
+    } else {
+      mostrarMensaje("danger", "bi-x-circle", "Credenciales incorrectas.");
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Entrar';
+    }
+  })
+  .catch(function() {
+    mostrarMensaje("warning", "bi-wifi-off", "No se pudo conectar al servidor.");
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Entrar';
+  });
+}
+
+function mostrarMensaje(tipo, icono, texto) {
+  const tipos = { success: "alert-success", danger: "alert-danger", warning: "alert-warning" };
+  const c = document.getElementById("mensaje-container");
+  const m = document.getElementById("mensaje");
+  m.className = "alert " + tipos[tipo] + " mb-0 rounded-3 py-2 px-3";
+  m.innerHTML = '<i class="bi ' + icono + ' me-2"></i>' + texto;
+  c.classList.remove("d-none");
+}
+</script>
+
+</body>
+</html>
