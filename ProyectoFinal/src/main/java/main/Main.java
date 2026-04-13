@@ -39,6 +39,12 @@ public class Main {
                 factory.setIdleTimeout(java.time.Duration.ofSeconds(60));
             });
 
+            config.bundledPlugins.enableCors(cors -> {
+                cors.addRule(it -> {
+                    it.anyHost();
+                });
+            });
+
             config.fileRenderer(new JavalinThymeleaf());
 
             config.staticFiles.add(staticFileConfig -> {
@@ -106,7 +112,7 @@ public class Main {
             });
 
             // Filtro API
-            config.routes.before("/api/*", RestController::filtroJwt);
+            config.routes.before("/api/formularios", RestController::filtroJwt);
 
             //Endpoint /
             config.routes.get("/", ctx -> {
