@@ -191,6 +191,32 @@ public class Main {
 
         }).start(7000);
 
+        //Servidor GRPC
+
+        try {
+            int port = 50051;
+            io.grpc.Server server = io.grpc.ServerBuilder
+                    .forPort(port)
+                    .addService(new main.grpc.FormularioServiceGrpc())
+                    .addService(io.grpc.protobuf.services.ProtoReflectionService.newInstance())
+                    .build()
+                    .start();
+
+            System.out.println("Servidor gRPC escuchando en puerto " + port);
+
+            Runtime.getRuntime().addShutdownHook(
+                    new Thread(() -> {
+                        System.err.println("Cerrando servidor gRPC...");
+                        if (server != null) {
+                            server.shutdown();
+                        }
+                        System.err.println("Servidor gRPC detenido");
+                    })
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
 }
