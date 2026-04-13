@@ -1,16 +1,30 @@
 package main;
 
 import io.javalin.Javalin;
+import io.javalin.http.*;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.rendering.template.JavalinThymeleaf;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import main.controladores.AuthController;
 import main.controladores.FormularioController;
+import main.controladores.RestController;
 import main.controladores.UsuarioController;
 import main.entidades.Rol;
 import main.entidades.Usuario;
 import main.servicios.UsuarioService;
 import main.util.EncryptUtil;
+
+import javax.crypto.SecretKey;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
+import java.util.Map;
 
 public class Main {
 
@@ -79,9 +93,10 @@ public class Main {
                 }
             });
 
+            // Filtro para rutas sin login
             config.routes.before(ctx -> {
                 String path = ctx.path();
-                if (path.equals("/login") || path.startsWith("/css") || path.startsWith("/js") || path.startsWith("/imgs") || path.startsWith("/js")) {
+                if (path.equals("/login") || path.startsWith("/api") || path.startsWith("/css") || path.startsWith("/js") || path.startsWith("/imgs") || path.startsWith("/js")) {
                     return;
                 }
                 if (ctx.sessionAttribute("username") == null) {
@@ -89,6 +104,9 @@ public class Main {
                     return;
                 }
             });
+
+            // Filtro API
+            config.routes.before("/api/*", RestController::filtroJwt);
 
             //Endpoint /
             config.routes.get("/", ctx -> {
@@ -99,6 +117,9 @@ public class Main {
             config.routes.get("/login", AuthController::mostrarLogin);
             config.routes.post("/login", AuthController::login);
             config.routes.get("/logout", AuthController::logout);
+
+            //API Servicio Rest Auth
+            config.routes.post("/api/login", RestController::loginApi);
 
             //Endpoint Panel
             config.routes.get("/admin/panel", ctx -> {
@@ -123,15 +144,20 @@ public class Main {
             config.routes.get("/formularios/ver/{id}", FormularioController::verFormulario);
             config.routes.get("/formularios/editar", FormularioController::mostrarFormulario);
 
+            // API Servicio Rest Formularios
+            config.routes.get("/api/formularios", RestController::listarFormulariosApi);
+            config.routes.post("/api/formularios", RestController::crearFormularioApi);
+
+
             config.routes.ws("/ws/formularios", wsConfig -> {
 
                 wsConfig.onConnect(session -> {
-                    System.out.println("[WS] Cliente conectado");
+                    System.out.println("Cliente conectado");
                 });
 
                 wsConfig.onMessage(session -> {
                     try {
-                        System.out.println("[WS] Mensaje recibido, tamaño: " + session.message().length());
+                        System.out.println("Mensaje recibido, tamaño: " + session.message().length());
 
                         // El controlador procesa y devuelve "OK" o "ERROR"
                         String resultado = FormularioController.sincronizarFormulariosWS(session.message());
@@ -148,11 +174,11 @@ public class Main {
                 });
 
                 wsConfig.onClose(session -> {
-                    System.out.println("[WS] Cliente desconectado");
+                    System.out.println("Cliente desconectado");
                 });
 
                 wsConfig.onError(session -> {
-                    System.err.println("[WS] Error en sesión");
+                    System.err.println("Error en sesión");
                 });
 
             });
