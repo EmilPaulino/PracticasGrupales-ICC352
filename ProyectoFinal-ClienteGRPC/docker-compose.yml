@@ -1,0 +1,6 @@
+services:
+
+  app:
+    build: .
+    ports:
+      - "7001:7001"

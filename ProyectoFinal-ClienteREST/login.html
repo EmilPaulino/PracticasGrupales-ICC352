@@ -50,6 +50,7 @@
   </div>
 </div>
 
+<script src="config.js"></script>
 <script>
 function login() {
   const username = document.getElementById("username").value.trim();
@@ -69,7 +70,7 @@ function login() {
   btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
   document.getElementById("mensaje-container").classList.add("d-none");
 
-  fetch("http://localhost:7000/api/login", {
+  fetch(API_URL + "/api/login", {
     method: "POST",
     body: formData
   })

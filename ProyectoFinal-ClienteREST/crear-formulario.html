@@ -53,45 +53,33 @@
 
                     <div class="mb-4">
                         <label class="form-label fw-medium" style="font-size:14px;">Foto</label>
-
                         <div class="border rounded-3 p-3 text-center">
-
                             <div style="max-width:300px;margin:auto;">
                                 <video id="video" class="w-100 rounded mb-2" style="display:none;" playsinline></video>
                                 <img id="preview" class="img-fluid rounded mb-2" style="display:none;">
                             </div>
-
                             <div class="d-flex justify-content-center gap-2 flex-wrap">
-
                                 <button type="button" class="btn btn-outline-dark btn-sm" onclick="activarCamara()">
                                     <i class="bi bi-camera-video"></i> Iniciar
                                 </button>
-
                                 <button type="button" class="btn btn-outline-danger btn-sm" onclick="desactivarCamara()">
                                     <i class="bi bi-power"></i> Apagar
                                 </button>
-
                                 <button type="button" class="btn btn-dark btn-sm" onclick="tomarFoto()">
                                     <i class="bi bi-camera"></i> Capturar
                                 </button>
-
                             </div>
-
                             <canvas id="canvas" style="display:none;"></canvas>
-
                         </div>
                     </div>
 
                     <div class="d-grid gap-2">
-
                         <button class="btn btn-dark rounded-3 fw-medium">
                             <i class="bi bi-floppy me-2"></i> Guardar formulario
                         </button>
-
                         <button type="button" onclick="window.location.href='formularios.html'" class="btn btn-outline-secondary rounded-3 fw-medium">
                             <i class="bi bi-x-lg me-2"></i> Cancelar
                         </button>
-
                     </div>
 
                 </form>
@@ -105,28 +93,20 @@
 <div class="modal fade" id="modalMensaje" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-
             <div class="modal-header border-0">
                 <h5 class="modal-title fw-semibold" id="modalTitulo">Mensaje</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-
-            <div class="modal-body" id="modalTexto">
-                Texto del mensaje
-            </div>
-
+            <div class="modal-body" id="modalTexto">Texto del mensaje</div>
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    Cerrar
-                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
-
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+<script src="config.js"></script>
 <script>
 
 if (!localStorage.getItem("token")) {
@@ -138,8 +118,7 @@ let fotoBase64 = "";
 let stream = null;
 
 function mostrarModal(titulo, texto) {
-    let modalEl = document.getElementById("modalMensaje");
-    let modal = new bootstrap.Modal(modalEl);
+    let modal = new bootstrap.Modal(document.getElementById("modalMensaje"));
     document.getElementById("modalTitulo").textContent = titulo;
     document.getElementById("modalTexto").textContent = texto;
     modal.show();
@@ -147,134 +126,65 @@ function mostrarModal(titulo, texto) {
 
 function activarCamara() {
     if (stream) return;
-
     preview.style.display = "none";
-
-    navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then(s => {
-            stream = s;
-            video.srcObject = s;
-            video.style.display = "block";
-            video.play();
-        })
-        .catch(() => {
-            mostrarModal("Error", "No se pudo activar la cámara");
-        });
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(s => { stream = s; video.srcObject = s; video.style.display = "block"; video.play(); })
+        .catch(() => { mostrarModal("Error", "No se pudo activar la cámara"); });
 }
 
 function desactivarCamara() {
-    if (stream) {
-        stream.getTracks().forEach(t => t.stop());
-        stream = null;
-    }
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
     video.style.display = "none";
 }
 
 function tomarFoto() {
-
-    if (!stream) {
-        mostrarModal("Error", "Primero activa la cámara");
-        return;
-    }
-
+    if (!stream) { mostrarModal("Error", "Primero activa la cámara"); return; }
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-
     canvas.getContext("2d").drawImage(video, 0, 0);
-
     fotoBase64 = canvas.toDataURL("image/png");
-
     preview.src = fotoBase64;
     preview.style.display = "block";
-
     desactivarCamara();
 }
 
 formEncuesta.addEventListener("submit", e => {
-
     e.preventDefault();
-
-    if (!fotoBase64) {
-        mostrarModal("Error", "Debes capturar una foto");
-        return;
-    }
-
-    if (!nombre.value.trim() || !sector.value.trim()) {
-        mostrarModal("Error", "Todos los campos son obligatorios");
-        return;
-    }
+    if (!fotoBase64) { mostrarModal("Error", "Debes capturar una foto"); return; }
+    if (!nombre.value.trim() || !sector.value.trim()) { mostrarModal("Error", "Todos los campos son obligatorios"); return; }
 
     navigator.geolocation.getCurrentPosition(pos => {
-
         const token = localStorage.getItem("token");
-
-        if (!token) {
-            mostrarModal("Error", "Debe iniciar sesión");
-            return;
-        }
+        if (!token) { mostrarModal("Error", "Debe iniciar sesión"); return; }
 
         let data = {
             nombre: nombre.value.trim(),
             sector: sector.value.trim(),
             nivelEscolar: nivelEscolar.value.toUpperCase(),
-            ubicacion: {
-                latitud: pos.coords.latitude,
-                longitud: pos.coords.longitude
-            },
+            ubicacion: { latitud: pos.coords.latitude, longitud: pos.coords.longitude },
             fotoBase64: fotoBase64
         };
 
-        fetch("http://localhost:7000/api/formularios", {
-
+        fetch(API_URL + "/api/formularios", {
             method: "POST",
-
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
-            },
-
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
             body: JSON.stringify(data)
-
         })
         .then(response => {
-
             if (response.status === 201) {
-
-                mostrarModal(
-                    "Éxito",
-                    "Formulario creado correctamente"
-                );
-
+                mostrarModal("Éxito", "Formulario creado correctamente");
                 formEncuesta.reset();
                 preview.style.display = "none";
                 fotoBase64 = "";
-
             } else {
-
-                mostrarModal(
-                    "Error",
-                    "No se pudo guardar el formulario"
-                );
-
+                mostrarModal("Error", "No se pudo guardar el formulario");
             }
-
         })
-        .catch(() => {
-
-            mostrarModal(
-                "Error",
-                "Error conectando con el servidor"
-            );
-
-        });
-
+        .catch(() => { mostrarModal("Error", "Error conectando con el servidor"); });
     });
-
 });
 
 window.addEventListener("beforeunload", desactivarCamara);
-
 </script>
 
 </body>
