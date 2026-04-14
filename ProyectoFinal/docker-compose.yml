@@ -1,0 +1,10 @@
+services:
+
+  app:
+    build: .
+    ports:
+      - "7000:7000"
+      - "50051:50051"
+    environment:
+      - URL_MONGO=mongodb+srv://admin:qXGJs7FK8nxMeBQs@oppucmm.uzm0fbr.mongodb.net/?appName=OPPUCMM
+      - DB_NOMBRE=EncuestaDB

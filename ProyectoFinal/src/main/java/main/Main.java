@@ -129,7 +129,7 @@ public class Main {
 
             //Endpoint Panel
             config.routes.get("/admin/panel", ctx -> {
-                ctx.render("templates/panel/panel.html");
+                ctx.render("templates/formulario/mapa.html");
             });
 
             //Endpoints Usuarios
@@ -149,9 +149,6 @@ public class Main {
             config.routes.get("/formularios/crear", FormularioController::mostrarFormulario);
             config.routes.get("/formularios/ver/{id}", FormularioController::verFormulario);
             config.routes.get("/formularios/editar", FormularioController::mostrarFormulario);
-            config.routes.get("/admin/mapa", ctx -> {
-                ctx.render("templates/formulario/mapa.html");
-            });
 
             // API Servicio Rest Formularios
             config.routes.get("/api/formularios", RestController::listarFormulariosApi);
