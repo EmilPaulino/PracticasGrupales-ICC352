@@ -1,11 +1,16 @@
 package main.servicios;
 
 import dev.morphia.Datastore;
+import dev.morphia.query.FindOptions;
+import dev.morphia.query.MorphiaCursor;
 import dev.morphia.query.filters.Filters;
 import main.entidades.Formulario;
 import org.bson.types.ObjectId;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static dev.morphia.query.filters.Filters.eq;
 
 public class FormularioServices {
 
@@ -21,35 +26,29 @@ public class FormularioServices {
         return instancia;
     }
 
-    // Crear
     public Formulario crearFormulario(Formulario formulario) {
         ds.save(formulario);
         return formulario;
     }
 
-    // Listar todos
     public List<Formulario> listarFormularios() {
         return ds.find(Formulario.class).iterator().toList();
     }
 
-    // Buscar por id
     public Formulario getFormularioPorId(String id) {
         if (!ObjectId.isValid(id)) return null;
-        return ds.find(Formulario.class).filter(Filters.eq("_id", new ObjectId(id))).first();
+        return ds.find(Formulario.class).filter(eq("_id", new ObjectId(id))).first();
     }
 
-    // Listar por username del encuestador (requerimiento 16.1)
     public List<Formulario> listarFormulariosPorUsuario(String username) {
-        return ds.find(Formulario.class).filter(Filters.eq("usuario.username", username)).iterator().toList();
+        return ds.find(Formulario.class).filter(eq("usuario.username", username)).iterator().toList();
     }
 
-    // Actualizar
     public Formulario actualizarFormulario(Formulario formulario) {
         ds.save(formulario);
         return formulario;
     }
 
-    // Eliminar — devuelve false si no existe
     public boolean eliminarFormulario(String id) {
         Formulario formulario = getFormularioPorId(id);
         if (formulario == null) {
@@ -57,5 +56,49 @@ public class FormularioServices {
         }
         ds.delete(formulario);
         return true;
+    }
+
+    public List<Formulario> listarFormulariosPaginados(int page, int size) {
+        int offset = (page - 1) * size;
+        List<Formulario> lista = new ArrayList<>();
+        try (MorphiaCursor<Formulario> cursor =
+                     ds.find(Formulario.class)
+                             .iterator(new FindOptions()
+                                     .skip(offset)
+                                     .limit(size)
+                                     .projection()
+                                     .exclude("fotoBase64")
+                             )) {
+            cursor.forEachRemaining(lista::add);
+        }
+        return lista;
+    }
+
+    public long contarFormularios() {
+        return ds.find(Formulario.class).count();
+    }
+
+    public List<Formulario> listarFormulariosPorUsuarioPaginado(String username, int skip, int size) {
+
+        FindOptions options = new FindOptions()
+                .skip(skip)
+                .limit(size);
+
+        List<Formulario> lista = new ArrayList<>();
+
+        try (MorphiaCursor<Formulario> cursor = ds.find(Formulario.class)
+                .filter(eq("usuario.username", username))
+                .iterator(options)) {
+            cursor.forEachRemaining(lista::add);
+        }
+
+        return lista;
+    }
+
+    public long contarFormulariosPorUsuario(String username) {
+        return ds.find(Formulario.class)
+                .filter(eq("usuario.username", username))
+                .count();
+
     }
 }

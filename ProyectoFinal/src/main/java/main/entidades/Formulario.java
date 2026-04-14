@@ -1,11 +1,13 @@
 package main.entidades;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.morphia.annotations.*;
 import org.bson.types.ObjectId;
 
 import java.time.LocalDateTime;
 import java.util.Date;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Entity("formularios")
 public class Formulario {
 

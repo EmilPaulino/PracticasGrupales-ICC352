@@ -1,11 +1,7 @@
-<div th:fragment="sidebar"
-     id="sidebar">
+<div th:fragment="sidebar" id="sidebar">
 
-    <div class="text-uppercase text-muted px-3 pt-3 pb-1"
-         style="font-size:.68rem;font-weight:700;letter-spacing:.1em;">
-
+    <div class="text-uppercase text-muted px-3 pt-3 pb-1" style="font-size:.68rem;font-weight:700;letter-spacing:.1em;">
         Principal
-
     </div>
 
     <a th:href="@{/admin/panel}"
@@ -17,7 +13,7 @@
 
     </a>
 
-    <a th:href="@{/mapa}"
+    <a th:href="@{/admin/mapa}"
        th:classappend="${activePage == 'mapa'} ? ' active'"
        class="sidebar-link">
 
@@ -28,11 +24,8 @@
 
     <hr class="mx-3 my-2"/>
 
-    <div class="text-uppercase text-muted px-3 pb-1"
-         style="font-size:.68rem;font-weight:700;letter-spacing:.1em;">
-
+    <div class="text-uppercase text-muted px-3 pb-1" style="font-size:.68rem;font-weight:700;letter-spacing:.1em;">
         Administración
-
     </div>
 
     <a th:href="@{/admin/usuarios}"
@@ -46,19 +39,27 @@
 
     <hr class="mx-3 my-2"/>
 
-    <div class="text-uppercase text-muted px-3 pb-1"
-         style="font-size:.68rem;font-weight:700;letter-spacing:.1em;">
-
+    <div class="text-uppercase text-muted px-3 pb-1" style="font-size:.68rem;font-weight:700;letter-spacing:.1em;">
         Formularios
-
     </div>
 
-    <a th:href="@{/admin/usuarios}"
+    <a th:href="@{/admin/formularios}"
        th:classappend="${activePage == 'formularios'} ? ' active'"
        class="sidebar-link">
 
-        <i class="bi bi-people"></i>
-        Formularios
+        <i class="bi bi-ui-checks"></i>
+        Gestión de Formularios
+
+    </a>
+
+    <hr class="mx-3 my-2"/>
+
+    <a th:href="@{/formularios}"
+       th:classappend="${activePage == 'formularios'} ? ' active'"
+       class="sidebar-link">
+
+        <i class="bi bi-input-cursor-text"></i>
+        Llenar Encuesta
 
     </a>
 
