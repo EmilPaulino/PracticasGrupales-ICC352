@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package formulariogrpc;
+
+message UsuarioRequest{
+  string usuario = 1;
+  int32 page = 2;
+  int32 size = 3;
+}
+
+message FormularioResponse{
+  string id = 1;
+  string nombre = 2;
+  string sector = 3;
+  string nivelEscolar = 4;
+  string usuario = 5;
+
+  double latitud = 6;
+  double longitud = 7;
+
+  string imagenBase64 = 8;
+
+  string fechaRegistro = 9;
+}
+
+message ListaFormulario{
+  repeated FormularioResponse formulario = 1;
+  int64 total = 2;
+}
+
+message FormularioCreado{
+  bool ok = 1;
+}
+
+message IdRequest{
+  string id = 1;
+}
+
+message LoginRequest{
+  string username = 1;
+  string password = 2;
+}
+
+message LoginResponse{
+  bool ok = 1;
+  string username = 2;
+}
+
+service FormularioRn{
+  rpc crearFormulario(FormularioResponse) returns (FormularioCreado);
+  rpc listarFormulariosPorUsuario(UsuarioRequest) returns (ListaFormulario);
+  rpc getFormularioPorId(IdRequest) returns (FormularioResponse);
+  rpc login(LoginRequest) returns (LoginResponse);
+}
