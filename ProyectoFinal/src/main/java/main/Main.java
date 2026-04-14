@@ -97,6 +97,9 @@ public class Main {
             config.routes.post("/formularios/crear", FormularioController::crearFormulario);
             config.routes.post("/formularios/actualizar", FormularioController::actualizarFormulario);
             config.routes.get("/formularios/eliminar/{id}", FormularioController::eliminarFormulario);
+            config.routes.get("/api/formularios", ctx -> {
+                ctx.json(main.servicios.FormularioServices.getInstancia().listarFormularios());
+            });
 
         }).start(7000);
 
