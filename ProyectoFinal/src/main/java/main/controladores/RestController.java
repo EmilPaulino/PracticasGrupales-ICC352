@@ -72,17 +72,14 @@ public class RestController {
 
         System.out.println("Validando JWT en la petición...");
 
-        // Permitir login API sin token
         if (ctx.path().equals("/api/login")) {
             return;
         }
 
-        // Permitir peticiones OPTIONS (preflight de CORS)
         if (ctx.method() == HandlerType.OPTIONS) {
             return;
         }
 
-        // Verificar que exista el header Authorization con prefijo Bearer
         String headerAutenticacion = ctx.header("Authorization");
         String prefijo = "Bearer";
 
@@ -90,7 +87,6 @@ public class RestController {
             throw new UnauthorizedResponse("Debe autenticarse para acceder al servicio.");
         }
 
-        // Extraer y validar el token JWT
         String tramaJwt = headerAutenticacion.replace(prefijo, "").trim();
         try {
             Claims claims = Jwts.parser()
@@ -101,7 +97,6 @@ public class RestController {
 
             System.out.println("JWT válido recibido");
 
-            // Almacenar claims en el contexto para uso posterior en los handlers
             ctx.attribute("jwt-claims", claims);
 
         } catch (ExpiredJwtException e) {
@@ -112,12 +107,25 @@ public class RestController {
     }
 
     public static void listarFormulariosApi(Context ctx) {
-        System.out.println("Entrando a /api/formularios");
+
         Claims claims = ctx.attribute("jwt-claims");
         String username = claims.get("usuario").toString();
-        System.out.println("Usuario JWT: " + username);
-        List<Formulario> lista = FormularioServices.getInstancia().listarFormulariosPorUsuario(username);
-        ctx.json(lista);
+
+        int page = ctx.queryParamAsClass("page", Integer.class).getOrDefault(1);
+        int size = ctx.queryParamAsClass("size", Integer.class).getOrDefault(8);
+        int skip = (page - 1) * size;
+        List<Formulario> lista = FormularioServices
+                .getInstancia()
+                .listarFormulariosPorUsuarioPaginado(username, skip, size);
+
+        long total = FormularioServices.getInstancia().contarFormulariosPorUsuario(username);
+
+        ctx.json(Map.of(
+                "data", lista,
+                "total", total,
+                "page", page,
+                "size", size
+        ));
     }
 
     public static void crearFormularioApi(Context ctx) {
