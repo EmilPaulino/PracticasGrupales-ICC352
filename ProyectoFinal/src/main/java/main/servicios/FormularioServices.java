@@ -60,9 +60,15 @@ public class FormularioServices {
 
     public List<Formulario> listarFormulariosPaginados(int page, int size) {
         int offset = (page - 1) * size;
-        FindOptions options = new FindOptions().skip(offset).limit(size);
         List<Formulario> lista = new ArrayList<>();
-        try (MorphiaCursor<Formulario> cursor = ds.find(Formulario.class).iterator(options)) {
+        try (MorphiaCursor<Formulario> cursor =
+                     ds.find(Formulario.class)
+                             .iterator(new FindOptions()
+                                     .skip(offset)
+                                     .limit(size)
+                                     .projection()
+                                     .exclude("fotoBase64")
+                             )) {
             cursor.forEachRemaining(lista::add);
         }
         return lista;

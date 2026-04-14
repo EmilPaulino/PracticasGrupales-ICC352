@@ -1,9 +1,10 @@
-<nav th:fragment="navbar" class="navbar navbar-dark navbar-pucmm px-3 shadow-sm">
+<nav th:fragment="navbar(mostrarHamburguesa)"
+     class="navbar navbar-dark navbar-pucmm px-3 shadow-sm">
 
     <div class="container-fluid">
 
         <!-- Botón sidebar (solo ADMIN) -->
-        <button th:if="${session.nombre != null}"
+        <button th:if="${mostrarHamburguesa and session.rol != null and session.rol.name() == 'ADMIN'}"
                 class="btn btn-outline-light d-lg-none me-2"
                 id="sidebarToggle">
             <i class="bi bi-list"></i>
@@ -12,40 +13,56 @@
         <!-- Logo -->
         <a th:href="@{/formularios}"
            class="d-flex align-items-center gap-2 text-decoration-none me-auto">
-            <img th:src="@{/imgs/logoPucmm.png}" width="38" height="38" style="border-radius:6px;" alt="PUCMM"/>
+
+            <img th:src="@{/imgs/logoPucmm.png}"
+                 width="38"
+                 height="38"
+                 style="border-radius:6px;"
+                 alt="PUCMM"/>
+
             <div class="text-white">
                 <div class="fw-bold" style="font-size:.95rem;">PUCMM</div>
                 <div class="small opacity-75">Oficina de Planeamiento</div>
             </div>
+
         </a>
 
         <!-- AUTH AREA -->
         <div class="ms-auto d-flex align-items-center gap-2">
 
-            <!-- Sin sesión del servidor: el script lo reemplaza si hay auth_user -->
+            <!-- Sin sesión -->
             <a th:if="${session.username == null}"
                href="/login"
                class="btn btn-outline-light btn-sm"
                id="btnLogin">
+
                 <i class="bi bi-box-arrow-in-right me-1"></i>
                 Iniciar sesión
+
             </a>
 
-            <!-- Con sesión activa del servidor -->
-            <div th:if="${session.nombre != null}" class="dropdown ms-2">
+            <!-- Con sesión -->
+            <div th:if="${session.nombre != null}"
+                 class="dropdown ms-2">
 
-                <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center gap-1"
+                <button class="btn btn-outline-light btn-sm dropdown-toggle
+                               d-flex align-items-center gap-1"
                         data-bs-toggle="dropdown">
+
                     <i class="bi bi-person-circle"></i>
-                    <span class="d-none d-sm-inline" th:text="${session.nombre}">
+
+                    <span class="d-none d-sm-inline"
+                          th:text="${session.nombre}">
                         Usuario
                     </span>
+
                 </button>
 
                 <ul class="dropdown-menu dropdown-menu-end">
 
                     <li class="d-sm-none">
-                        <span class="dropdown-item-text fw-semibold" th:text="${session.nombre}">
+                        <span class="dropdown-item-text fw-semibold"
+                              th:text="${session.nombre}">
                             Usuario
                         </span>
                     </li>
@@ -54,13 +71,35 @@
                         <hr class="dropdown-divider">
                     </li>
 
+                    <li th:if="${session.rol != null and session.rol.name() == 'ADMIN'}">
+
+                        <a class="dropdown-item"
+                           href="/admin/panel">
+
+                            <i class="bi bi-speedometer2 me-1"></i>
+                            Ir al panel
+
+                        </a>
+
+                    </li>
+
+                    <!-- Separador solo si es ADMIN -->
+                    <li th:if="${session.rol != null and session.rol.name() == 'ADMIN'}">
+                        <hr class="dropdown-divider">
+                    </li>
+
+                    <!-- Logout -->
                     <li>
+
                         <a class="dropdown-item text-danger"
                            href="/logout"
                            onclick="limpiarStorage()">
+
                             <i class="bi bi-box-arrow-right me-1"></i>
                             Cerrar sesión
+
                         </a>
+
                     </li>
 
                 </ul>
@@ -72,53 +111,68 @@
     </div>
 
     <script>
-        // Modo offline: si no hay sesión del servidor pero sí hay auth_user en
-        // localStorage, reemplaza el botón de login por el nombre del usuario.
         (function () {
+
             const btnLogin = document.getElementById("btnLogin");
-            if (!btnLogin) return; // hay sesión del servidor, no hacer nada
+            if (!btnLogin) return;
 
             const raw = localStorage.getItem("auth_user");
-            if (!raw) return; // no hay datos locales
+            if (!raw) return;
 
             const user = JSON.parse(raw);
-            if (!user || !user.nombre) return; // objeto incompleto
+            if (!user || !user.nombre) return;
 
             btnLogin.outerHTML = `
                 <div class="dropdown ms-2">
                     <button class="btn btn-outline-light btn-sm dropdown-toggle
                                    d-flex align-items-center gap-1"
                             data-bs-toggle="dropdown">
+
                         <i class="bi bi-person-circle me-1"></i>
-                        <span class="d-none d-sm-inline">${user.nombre}</span>
+
+                        <span class="d-none d-sm-inline">
+                            ${user.nombre}
+                        </span>
+
                         <span class="badge bg-warning text-dark ms-1"
-                              style="font-size:.65rem;">Offline</span>
+                              style="font-size:.65rem;">
+                            Offline
+                        </span>
+
                     </button>
+
                     <ul class="dropdown-menu dropdown-menu-end">
+
                         <li>
                             <span class="dropdown-item-text text-muted small">
                                 Sesión guardada localmente
                             </span>
                         </li>
-                        <li><hr class="dropdown-divider"></li>
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
                         <li>
                             <button class="dropdown-item text-danger"
                                     onclick="cerrarSesionLocal()">
+
                                 <i class="bi bi-box-arrow-right me-1"></i>
                                 Cerrar sesión
+
                             </button>
                         </li>
+
                     </ul>
+
                 </div>`;
         })();
 
-        // Cierra sesión cuando hay conexión (limpia localStorage antes de ir a /logout)
         function limpiarStorage() {
             localStorage.removeItem("auth_user");
             localStorage.removeItem("formularios");
         }
 
-        // Cierra sesión en modo offline (solo limpia localStorage)
         function cerrarSesionLocal() {
             localStorage.removeItem("auth_user");
             localStorage.removeItem("formularios");

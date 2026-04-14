@@ -47,8 +47,19 @@
        th:classappend="${activePage == 'formularios'} ? ' active'"
        class="sidebar-link">
 
-        <i class="bi bi-people"></i>
+        <i class="bi bi-ui-checks"></i>
         Gestión de Formularios
+
+    </a>
+
+    <hr class="mx-3 my-2"/>
+
+    <a th:href="@{/formularios}"
+       th:classappend="${activePage == 'formularios'} ? ' active'"
+       class="sidebar-link">
+
+        <i class="bi bi-input-cursor-text"></i>
+        Llenar Encuesta
 
     </a>
 
