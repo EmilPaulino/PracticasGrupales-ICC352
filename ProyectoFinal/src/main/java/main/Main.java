@@ -149,11 +149,16 @@ public class Main {
             config.routes.get("/formularios/crear", FormularioController::mostrarFormulario);
             config.routes.get("/formularios/ver/{id}", FormularioController::verFormulario);
             config.routes.get("/formularios/editar", FormularioController::mostrarFormulario);
+            config.routes.get("/admin/mapa", ctx -> {
+                ctx.render("templates/formulario/mapa.html");
+            });
 
             // API Servicio Rest Formularios
             config.routes.get("/api/formularios", RestController::listarFormulariosApi);
             config.routes.post("/api/formularios", RestController::crearFormularioApi);
-
+            config.routes.get("/api/mapa", ctx -> {
+                ctx.json(main.servicios.FormularioServices.getInstancia().listarFormularios());
+            });
 
             config.routes.ws("/ws/formularios", wsConfig -> {
 
