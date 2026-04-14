@@ -27,9 +27,8 @@ public class FormularioServiceGrpc extends FormularioRnGrpc.FormularioRnImplBase
         int size = request.getSize();
         if (page <= 0) page = 1;
         if (size <= 0) size = 5;
-
-        List<Formulario> formularios = formularioServices.listarFormulariosPorUsuarioPaginado(request.getUsuario(), page, size);
-        long total = formularioServices.contarFormulariosPorUsuario(request.getUsuario());
+        int offset = (page - 1) * size;
+        List<Formulario> formularios = formularioServices.listarFormulariosPorUsuarioPaginado(request.getUsuario(), offset, size);        long total = formularioServices.contarFormulariosPorUsuario(request.getUsuario());
         List<formulariogrpc.Formulario.FormularioResponse> listaResponse = new ArrayList<>();
         for (Formulario f : formularios) {
             listaResponse.add(convertirConImagen(f));
@@ -51,27 +50,14 @@ public class FormularioServiceGrpc extends FormularioRnGrpc.FormularioRnImplBase
     }
 
     @Override
-    public void login(
-            formulariogrpc.Formulario.LoginRequest request,
-            StreamObserver<formulariogrpc.Formulario.LoginResponse> responseObserver) {
-
-        UsuarioService usuarioService =
-                UsuarioService.getInstancia();
-
-        String username =
-                request.getUsername();
-
-        String password =
-                request.getPassword();
+    public void login(formulariogrpc.Formulario.LoginRequest request, StreamObserver<formulariogrpc.Formulario.LoginResponse> responseObserver) {
+        UsuarioService usuarioService = UsuarioService.getInstancia();
+        String username = request.getUsername();
+        String password = request.getPassword();
 
         boolean valido = false;
-
-        Usuario usuario =
-                usuarioService.findByUsername(username);
-
-        if (usuario != null &&
-                password.equals(usuario.getPassword())) {
-
+        Usuario usuario = usuarioService.findByUsername(username);
+        if (usuario != null && password.equals(usuario.getPassword())) {
             valido = true;
         }
 
@@ -149,6 +135,18 @@ public class FormularioServiceGrpc extends FormularioRnGrpc.FormularioRnImplBase
             usuario.setUsername(r.getUsuario());
             f.setUsuario(usuario);
         }
+        if (r.getFechaRegistro() != null && !r.getFechaRegistro().isEmpty()) {
+            try {
+                java.util.Date fecha = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                        .parse(r.getFechaRegistro());
+                f.setFechaRegistro(fecha);
+            } catch (Exception e) {
+                f.setFechaRegistro(new java.util.Date());
+            }
+        } else {
+            f.setFechaRegistro(new java.util.Date());
+        }
+
         return f;
     }
 }

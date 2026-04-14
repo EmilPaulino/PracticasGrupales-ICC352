@@ -30,7 +30,9 @@ public class FormularioController {
 
         int size = 10;
 
-        List<Formulario> formularios = formularioService.listarFormulariosPorUsuarioPaginado(username, page, size);
+        int offset = (page - 1) * size;
+
+        List<Formulario> formularios = formularioService.listarFormulariosPorUsuarioPaginado(username, offset, size);
 
         long total = formularioService.contarFormulariosPorUsuario(username);
 

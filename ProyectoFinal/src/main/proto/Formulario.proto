@@ -19,6 +19,8 @@ message FormularioResponse{
   double longitud = 7;
 
   string imagenBase64 = 8;
+
+  string fechaRegistro = 9;
 }
 
 message ListaFormulario{
