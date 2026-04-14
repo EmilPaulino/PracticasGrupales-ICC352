@@ -197,6 +197,7 @@ public class Main {
             int port = 50051;
             io.grpc.Server server = io.grpc.ServerBuilder
                     .forPort(port)
+                    .maxInboundMessageSize(50 * 1024 * 1024)
                     .addService(new main.grpc.FormularioServiceGrpc())
                     .addService(io.grpc.protobuf.services.ProtoReflectionService.newInstance())
                     .build()

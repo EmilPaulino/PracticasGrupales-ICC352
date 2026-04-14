@@ -34,8 +34,19 @@ message IdRequest{
   string id = 1;
 }
 
+message LoginRequest{
+  string username = 1;
+  string password = 2;
+}
+
+message LoginResponse{
+  bool ok = 1;
+  string username = 2;
+}
+
 service FormularioRn{
   rpc crearFormulario(FormularioResponse) returns (FormularioCreado);
   rpc listarFormulariosPorUsuario(UsuarioRequest) returns (ListaFormulario);
   rpc getFormularioPorId(IdRequest) returns (FormularioResponse);
+  rpc login(LoginRequest) returns (LoginResponse);
 }

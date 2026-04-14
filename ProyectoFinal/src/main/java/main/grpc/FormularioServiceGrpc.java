@@ -5,6 +5,7 @@ import io.grpc.stub.StreamObserver;
 
 import main.entidades.*;
 import main.servicios.FormularioServices;
+import main.servicios.UsuarioService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,7 @@ public class FormularioServiceGrpc extends FormularioRnGrpc.FormularioRnImplBase
         long total = formularioServices.contarFormulariosPorUsuario(request.getUsuario());
         List<formulariogrpc.Formulario.FormularioResponse> listaResponse = new ArrayList<>();
         for (Formulario f : formularios) {
-            listaResponse.add(convertir(f));
+            listaResponse.add(convertirConImagen(f));
         }
         formulariogrpc.Formulario.ListaFormulario resultado = formulariogrpc.Formulario.ListaFormulario.newBuilder().addAllFormulario(listaResponse).setTotal(total).build();
         responseObserver.onNext(resultado);
@@ -47,6 +48,42 @@ public class FormularioServiceGrpc extends FormularioRnGrpc.FormularioRnImplBase
         } else {
             responseObserver.onError(new RuntimeException("Formulario no encontrado"));
         }
+    }
+
+    @Override
+    public void login(
+            formulariogrpc.Formulario.LoginRequest request,
+            StreamObserver<formulariogrpc.Formulario.LoginResponse> responseObserver) {
+
+        UsuarioService usuarioService =
+                UsuarioService.getInstancia();
+
+        String username =
+                request.getUsername();
+
+        String password =
+                request.getPassword();
+
+        boolean valido = false;
+
+        Usuario usuario =
+                usuarioService.findByUsername(username);
+
+        if (usuario != null &&
+                password.equals(usuario.getPassword())) {
+
+            valido = true;
+        }
+
+        formulariogrpc.Formulario.LoginResponse response =
+                formulariogrpc.Formulario.LoginResponse
+                        .newBuilder()
+                        .setOk(valido)
+                        .setUsername(username)
+                        .build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
     }
 
     private formulariogrpc.Formulario.FormularioResponse convertir(Formulario f) {
